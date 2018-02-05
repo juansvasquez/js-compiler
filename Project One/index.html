@@ -1,31 +1,34 @@
 <div>
 	<h1>Lexer</h1>
 		<div>
-			Select a .txt file for lexing: 
+			Select a text file for lexing: 
 			<input type="file" id="fileInput">
 		</div>
+		<!--text file contents and token output displayed below-->
 		<div id="textDisplayArea"></div>
+		<p>Tokens:</p>
 		<div id="tokenDisplayArea"></div>
 </div>
-<
+<script type="text/javascript" src="lexer.js"></script>
 <script>
 	window.onload = function() {
 		var fileInput = document.getElementById('fileInput');
 		var textDisplayArea = document.getElementById('textDisplayArea');
 		var tokenDisplayArea = document.getElementById('tokenDisplayArea');
-			fileInput.addEventListener('change', function(e) {
-					var file = fileInput.files[0];
-					var textType = /text.*/;
-					if (file.type.match(textType)) {
-						var reader = new FileReader();
-						reader.onload = function(e) {
-							textDisplayArea.innerText = reader.result;
-							//tokenDisplayArea.innerText = lex(reader.result);
-						}
-						reader.readAsText(file);    
-					} else {
-							textDisplayArea.innerText = "File not supported!";
-					}
-			});
+		fileInput.addEventListener('change', function(e) {
+			var file = fileInput.files[0];
+			var textType = /text.*/;
+			//confirms that submitted file is a text file
+			if (file.type.match(textType)) {
+				var reader = new FileReader();
+				reader.onload = function(e) {
+					textDisplayArea.innerText = reader.result;
+					tokenDisplayArea.innerText = lexer(reader.result);
+				}
+				reader.readAsText(file);  
+			} else {
+					textDisplayArea.innerText = "File not supported!"; //not a text file
+			}
+		});
 	}
 </script>
