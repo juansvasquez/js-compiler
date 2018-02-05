@@ -1,0 +1,31 @@
+<div>
+	<h1>Lexer</h1>
+		<div>
+			Select a .txt file for lexing: 
+			<input type="file" id="fileInput">
+		</div>
+		<div id="textDisplayArea"></div>
+		<div id="tokenDisplayArea"></div>
+</div>
+<
+<script>
+	window.onload = function() {
+		var fileInput = document.getElementById('fileInput');
+		var textDisplayArea = document.getElementById('textDisplayArea');
+		var tokenDisplayArea = document.getElementById('tokenDisplayArea');
+			fileInput.addEventListener('change', function(e) {
+					var file = fileInput.files[0];
+					var textType = /text.*/;
+					if (file.type.match(textType)) {
+						var reader = new FileReader();
+						reader.onload = function(e) {
+							textDisplayArea.innerText = reader.result;
+							//tokenDisplayArea.innerText = lex(reader.result);
+						}
+						reader.readAsText(file);    
+					} else {
+							textDisplayArea.innerText = "File not supported!";
+					}
+			});
+	}
+</script>
