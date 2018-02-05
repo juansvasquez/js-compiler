@@ -1,0 +1,160 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% CMPT 432
+% Spring 2018
+% Lab One
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Short Sectioned Assignment
+% LaTeX Template
+% Version 1.0 (5/5/12)
+%
+% This template has been downloaded from: http://www.LaTeXTemplates.com
+% Original author: % Frits Wenneker (http://www.howtotex.com)
+% License: CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+% Modified by Alan G. Labouseur  - alan@labouseur.com
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[letterpaper, 10pt,DIV=13]{scrartcl} 
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm,xfrac} % Math packages
+\usepackage{sectsty} % Allows customizing section commands
+\usepackage{graphicx}
+\usepackage[lined,linesnumbered,commentsnumbered]{algorithm2e}
+\usepackage{listings}
+\usepackage{parskip}
+\usepackage{lastpage}
+
+\allsectionsfont{\normalfont\scshape} % Make all section titles in default font and small caps.
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{page \thepage\ of \pageref{LastPage}} % Page numbering for right footer
+
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs.
+
+\binoppenalty=3000
+\relpenalty=3000
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{	
+   \normalfont \normalsize 
+   \textsc{CMPT 432 - Spring 2018 - Dr. Labouseur} \\[10pt] % Header stuff.
+   \horrule{0.5pt} \\[0.25cm] 	% Top horizontal rule
+   \huge Lab One  \\     	    % Assignment title
+   \horrule{0.5pt} \\[0.25cm] 	% Bottom horizontal rule
+}
+
+\author{Juan S. Vasquez \\ \normalsize jvasquez1@marist.edu}
+
+\date{\normalsize\today} 	% Today's date.
+
+\begin{document}
+\maketitle % Print the title
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 1.11
+%----------------------------------------------------------------------------------------
+\section{Exercise 1.11}
+
+\subsection{The Measure of Software Similarity (MOSS)}
+The MOSS is a very useful tool for detecting code plagiarism in programming-related CS courses. While the internal algorithms for how the tool actually works remains confidential, we can look at some techniques used by the MOSS to find similarity.
+
+\subsection{Finding Similarity}
+It is clear that the MOSS software is very sophisticated when it comes to catching plagiarism; more elaborate attempts at cheating, such as changing variable names and switching the order of functions in the program stand out just as much as duplicate code. This is mostly because there are three very important properties that MOSS uses and every plagiarism-detection program should have: $whitespace$ $insensitivity$, $noise$ $suppression$, and $position$ $independence$.
+
+\subsubsection{Whitespace Insensitivity}
+Matches cannot be affected by things like capitalization, punctuation, spacing, etc. In this case, variable names changes should also be ignored.
+
+\subsubsection{Noise Suppression}
+Short matches between two documents, such as small functions, are too vague. The matches sections must be large and meaningful enough to warrant detection.
+
+\subsubsection{Position Independence}
+The rearranging, extending, and shortening of matches should not affect match level if the plagiarized areas remain significant.
+
+%----------------------------------------------------------------------------------------
+%   end EXERCISE 1.11
+%----------------------------------------------------------------------------------------
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 3.1
+%----------------------------------------------------------------------------------------
+\section{Exercise 3.1}
+
+\subsection{Token Sequence}
+Line 1 - ID(main), LPAREN, RPAREN, LBRACE \\  
+Line 2 - CONST, VAR\_TYPE(float), ID(payment), ASSIGN, FLOATNUM(384.00), SEMICOLON \\ 
+Line 3 - VAR\_TYPE(float), ID(bal), SEMICOLON \\
+Line 4 - VAR\_TYPE(int), ID(month), ASSIGN, INTNUM(0), SEMICOLON\\
+Line 5 - ID(bal), ASSIGN, INTNUM(15000), SEMICOLON\\
+Line 6 - WHILE, LPAREN, ID(bal), GTHAN, INTNUM(0), RPAREN, LBRACE\\
+Line 7 - PRINT, LPAREN, QUOTE, CHAR(M), CHAR(o) ... CHAR(n), QUOTE, COMMA, ID(month), COMMA, ID(bal), RPAREN, SEMICOLON\\
+Line 8 - ID(bal), ASSIGN, ID(bal), MINUS, ID(payment), SUM, FLOATNUM(0.015), MULTIP, ID(bal), SEMICOLON\\
+Line 9 - ID(month), ASSIGN, ID(month), SUM, INTNUM(1), SEMICOLON\\
+Line 10 - RBRACE\\
+Line 11 - RBRACE\\
+
+\subsection{Tokens with Extra Information}
+ID tokens require additional information, as well as INTNUM and FLOATNUM tokens.
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 3.1
+%----------------------------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 1.1.4
+%----------------------------------------------------------------------------------------
+\section{Exercise 1.1.4}
+
+\subsection{C as a Target Language}
+The advantage to using C as a target language for a compiler is that C is a very commonplace language.
+
+%----------------------------------------------------------------------------------------
+%   end EXERCISE 1.1.4
+%----------------------------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 1.6.1
+%----------------------------------------------------------------------------------------
+\section{Exercise 1.6.1}
+
+\subsection{Assigned Values}
+w is assigned 13\\
+x is assigned 11\\
+y is assigned 13\\
+z is assigned 11
+
+%----------------------------------------------------------------------------------------
+%   end EXERCISE 1.6.1
+%----------------------------------------------------------------------------------------
+
+\pagebreak
+\end{document}
