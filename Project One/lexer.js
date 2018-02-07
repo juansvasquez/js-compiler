@@ -16,12 +16,37 @@ function scanner(s){
 		do {
 			var subby = s.substr(lastPosition,currentSubSize); //current substring
 			
-			// if(/^int$/.test(subby)){ //[ int ] keyword finder
-			// 	foundToken = ["T_VAR_TYPE",lastPosition,3];
-			// 	isFound = true;
-			// }
+			if(/^int$/.test(subby)){ //[ int ] keyword finder
+				foundToken = ["T_VAR_TYPE",lastPosition,3];
+				isFound = true;
+			}
 
-			if(/\{$/.test(subby)){ //[ { ] symbol finder
+			else if(/^print$/.test(subby)){ //[ print ] keyword finder
+				foundToken = ["T_PRINT",lastPosition,5];
+				isFound = true;
+			}
+
+			else if(/^while$/.test(subby)){ //[ while ] keyword finder
+				foundToken = ["T_WHILE",lastPosition,5];
+				isFound = true;
+			}
+
+			else if(/^if$/.test(subby)){ //[] keyword finder
+				foundToken = ["T_IF",lastPosition,2];
+				isFound = true;
+			}
+
+			else if(/^false$/.test(subby)){ //[] keyword finder
+				foundToken = ["T_FALSE",lastPosition,5];
+				isFound = true;
+			}
+
+			else if(/^true$/.test(subby)){ //[] keyword finder
+				foundToken = ["T_TRUE",lastPosition,4];
+				isFound = true;
+			}
+
+			else if(/\{$/.test(subby)){ //[ { ] symbol finder
 				if(isFound){ //if we've already found a token and hit this symbol
 					break;
 				}
@@ -29,7 +54,7 @@ function scanner(s){
 				isFound = true;
 			}
 
-			if(/\}$/.test(subby)){ //[ } ] symbol finder
+			else if(/\}$/.test(subby)){ //[ } ] symbol finder
 				if(isFound){ //if we've already found a token and hit this symbol
 					break;
 				}
@@ -37,13 +62,18 @@ function scanner(s){
 				isFound = true;
 			}
 
-			if(/\$$/.test(subby)){ //[ $ ] symbol finder
+			else if(/\$$/.test(subby)){ //[ $ ] symbol finder
 				if(isFound){ //if we've already found a token and hit this symbol
 					break;
 				}
 				foundToken = ["T_EOP",lastPosition,1];
 				isFound = true;
 			}
+
+			// else {
+			// 	foundToken = ["ERROR: Unrecognized Token",lastPosition,1];
+			// 	isFound = true;
+			// }
 
 			currentSubSize++;
 		}
