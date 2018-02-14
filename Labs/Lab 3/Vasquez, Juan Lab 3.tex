@@ -1,0 +1,229 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% CMPT 432
+% Spring 2018
+% Lab Three
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Short Sectioned Assignment
+% LaTeX Template
+% Version 1.0 (5/5/12)
+%
+% This template has been downloaded from: http://www.LaTeXTemplates.com
+% Original author: % Frits Wenneker (http://www.howtotex.com)
+% License: CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+% Modified by Alan G. Labouseur  - alan@labouseur.com
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[letterpaper, 10pt,DIV=13]{scrartcl} 
+
+\usepackage{qtree}
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm,xfrac} % Math packages
+\usepackage{sectsty} % Allows customizing section commands
+\usepackage{graphicx}
+\usepackage[lined,linesnumbered,commentsnumbered]{algorithm2e}
+\usepackage{listings}
+\usepackage{parskip}
+\usepackage{lastpage}
+
+\allsectionsfont{\normalfont\scshape} % Make all section titles in default font and small caps.
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{page \thepage\ of \pageref{LastPage}} % Page numbering for right footer
+
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs.
+
+\binoppenalty=3000
+\relpenalty=3000
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{	
+   \normalfont \normalsize 
+   \textsc{CMPT 432 - Spring 2018 - Dr. Labouseur} \\[10pt] % Header stuff.
+   \horrule{0.5pt} \\[0.25cm] 	% Top horizontal rule
+   \huge Lab Three \\     	    % Assignment title
+   \horrule{0.5pt} \\[0.25cm] 	% Bottom horizontal rule
+}
+
+\author{Juan S. Vasquez \\ \normalsize jvasquez1@marist.edu}
+
+\date{\normalsize\today} 	% Today's date.
+
+\begin{document}
+\maketitle % Print the title
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 4.7
+%----------------------------------------------------------------------------------------
+\section{Exercise 4.7}
+
+1 Start\hspace{0.3cm}-> E \$  \\
+2 E \hspace{0.6cm}   -> T plus E  \\
+3   \hspace{1cm}     | T          \\
+4 T  \hspace{0.6cm}   -> T times F \\
+5    \hspace{1cm}    | F           \\
+6 F  \hspace{0.6cm}   -> (E)       \\
+7    \hspace{1cm}    | num
+
+\subsection{Leftmost Derivation for num plus num times num plus num \$}
+
+Start ->\textsubscript{lm} E \$ \\
+->\textsubscript{lm} T plus E \$ \\
+->\textsubscript{lm} F plus E \$ \\
+->\textsubscript{lm} num plus E \$ \\
+->\textsubscript{lm} num plus T \$ \\
+->\textsubscript{lm} num plus T times F \$ \\
+->\textsubscript{lm} num plus F times F \$ \\
+->\textsubscript{lm} num plus num times F \$ \\
+->\textsubscript{lm} num plus num times (E) \$ \\
+->\textsubscript{lm} num plus num times (T plus E) \$ \\
+->\textsubscript{lm} num plus num times (F plus E) \$ \\
+->\textsubscript{lm} num plus num times (num plus E) \$ \\
+->\textsubscript{lm} num plus num times (num plus T) \$ \\
+->\textsubscript{lm} num plus num times (num plus F) \$ \\
+->\textsubscript{lm} num plus num times (num plus num) \$
+
+\subsection{Rightmost Derivation num times num plus num times num \$}
+
+Start ->\textsubscript{rm} E \$ \\
+->\textsubscript{rm} T \$ \\
+->\textsubscript{rm} T times F \$ \\
+->\textsubscript{rm} T times num \$ \\
+->\textsubscript{rm} F times num \$ \\
+->\textsubscript{rm} (E) times num \$ \\
+->\textsubscript{rm} (T plus E) times num \$ \\
+->\textsubscript{rm} (T plus T) times num \$ \\
+->\textsubscript{rm} (T plus F) times num \$ \\
+->\textsubscript{rm} (T plus num) times num \$ \\
+->\textsubscript{rm} (T times F plus num) times num \$ \\
+->\textsubscript{rm} (T times num plus num) times num \$ \\
+->\textsubscript{rm} (F times num plus num) times num \$ \\
+->\textsubscript{rm} (num times num plus num) times num \$
+
+\subsection{Grammar Structure}
+When we evaluate the CSTs created by the rightmost and leftmost derivations, we can see that both of the trees follow order of operations dictated by mathematics. Parentheses in both cases execute first, followed by multiplication and then addition (if applicable).
+
+%----------------------------------------------------------------------------------------
+%   end EXERCISE 4.7
+%----------------------------------------------------------------------------------------
+
+\pagebreak
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 5.2
+%----------------------------------------------------------------------------------------
+\section{Exercise 5.2}
+
+1 Start -> Value \$ \\
+2 Value -> num \\
+3 \hspace{1cm} | lparen Expr rparen \\
+4 Expr -> plus Value Value \\
+5 \hspace{1cm} | prod Values \\
+6 Values -> Value Values \\
+7 \hspace{1cm} | $\lambda$
+
+\subsection{5.2c - Recursive Descent Parser}
+
+procedure Start() \\
+.\hspace{1cm}switch(...)\\
+.\hspace{2cm}case ts.$peek$()$\in$ \{num, lparen, rparen, plus, prod, \$\} \\
+.\hspace{3cm}call Value() \\
+.\hspace{3cm}call $match$(\$)
+
+procedure Value() \\
+.\hspace{1cm}switch(...)\\
+.\hspace{2cm}case ts.$peek$()$\in$ \{num\} \\
+.\hspace{3cm}call $match$(num) \\
+.\hspace{2cm}case ts.$peek$()$\in$ \{lparen\} \\
+.\hspace{3cm}call $match$(lparen) \\
+.\hspace{3cm}call Expr() \\
+.\hspace{3cm}call $match$(rparen) \\
+
+
+procedure Expr() \\
+.\hspace{1cm}switch(...)\\
+.\hspace{2cm}case ts.$peek$()$\in$ \{plus\} \\
+.\hspace{3cm}call $match$(plus) \\
+.\hspace{3cm}call Value() \\
+.\hspace{3cm}call Value() \\
+.\hspace{2cm}case ts.$peek$()$\in$ \{prod\} \\
+.\hspace{3cm}call $match$(prod) \\
+.\hspace{3cm}call Values() \\
+
+procedure Values() \\
+.\hspace{1cm}switch(...)\\
+.\hspace{2cm}case ts.$peek$()$\in$ \{num, lparen, rparen, plus, prod\} \\
+.\hspace{3cm}call Value() \\
+.\hspace{3cm}call Values() \\
+.\hspace{2cm}case ts.$peek$()$\in$ \{\$\} \\
+.\hspace{3cm}return() \\
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 5.2
+%----------------------------------------------------------------------------------------
+
+\pagebreak
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 4.2.1
+%----------------------------------------------------------------------------------------
+\section{Exercise 4.2.1}
+
+S -> SS+ | SS* | a \\
+aa + a*
+
+\subsection{4.2.1a - Leftmost Derivation}
+S ->\textsubscript{lm} SS* \\
+->\textsubscript{lm} SS+S* \\
+->\textsubscript{lm} aS+S* \\
+->\textsubscript{lm} aa+S* \\
+->\textsubscript{lm} aa+a* \\
+
+\subsection{4.2.1b - Rightmost Derivation}
+S ->\textsubscript{lm} SS* \\
+->\textsubscript{lm} Sa* \\
+->\textsubscript{lm} SS+a* \\
+->\textsubscript{lm} Sa+a* \\
+->\textsubscript{lm} aa+a* \\
+
+\subsection{4.2.1c - Parse Tree}
+
+\Tree[.S [.S [.S a ]
+             [.S a ]
+             [.+ ]]
+         [.S a ]
+         [.* ]]
+%----------------------------------------------------------------------------------------
+%   end EXERCISE 4.2.1
+%----------------------------------------------------------------------------------------
+
+\pagebreak
+\end{document}
