@@ -24,7 +24,7 @@
 
 \documentclass[letterpaper, 10pt,DIV=13]{scrartcl} 
 
-\usepackage{qtree}
+\usepackage{qtree} %Tree creator
 
 \usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
 \usepackage[english]{babel} % English language/hyphenation
@@ -154,9 +154,8 @@ When we evaluate the CSTs created by the rightmost and leftmost derivations, we 
 
 procedure Start() \\
 .\hspace{1cm}switch(...)\\
-.\hspace{2cm}case ts.$peek$()$\in$ \{num, lparen, rparen, plus, prod, \$\} \\
-.\hspace{3cm}call Value() \\
-.\hspace{3cm}call $match$(\$)
+.\hspace{2cm}call Value() \\
+.\hspace{2cm}call $match$(\$)
 
 procedure Value() \\
 .\hspace{1cm}switch(...)\\
