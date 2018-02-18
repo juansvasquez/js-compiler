@@ -1,34 +1,20 @@
 <div>
 	<h1>Lexer</h1>
+		Enter your code for lexing: 
 		<div>
-			Select a text file for lexing: 
-			<input type="file" id="fileInput">
+			<textarea id="textArea" cols="50" rows="5"></textarea>
+			<div>
+				<button type="button" onclick="codeSubmit()">Submit Code</button>
+			</div>
 		</div>
-		<!--text file contents and token output displayed below-->
-		<div id="textDisplayArea"></div>
+		<!--token output displayed below-->
 		<p>Tokens:</p>
 		<div id="tokenDisplayArea"></div>
 </div>
 <script type="text/javascript" src="lexer.js"></script>
 <script>
-	window.onload = function() {
-		var fileInput = document.getElementById('fileInput');
-		var textDisplayArea = document.getElementById('textDisplayArea');
-		var tokenDisplayArea = document.getElementById('tokenDisplayArea');
-		fileInput.addEventListener('change', function(e) {
-			var file = fileInput.files[0];
-			var textType = /text.*/;
-			//confirms that submitted file is a text file
-			if (file.type.match(textType)) {
-				var reader = new FileReader();
-				reader.onload = function(e) {
-					textDisplayArea.innerText = reader.result;
-					tokenDisplayArea.innerText = lexer(reader.result);
-				}
-				reader.readAsText(file);  
-			} else {
-					textDisplayArea.innerText = "File not supported!"; //not a text file
-			}
-		});
+	function codeSubmit(){
+		var code = document.getElementById("textArea").value;
+		document.getElementById("tokenDisplayArea").innerText = lexer(code);
 	}
 </script>
