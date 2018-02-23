@@ -1,0 +1,192 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% CMPT 432
+% Spring 2018
+% Lab Three
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Short Sectioned Assignment
+% LaTeX Template
+% Version 1.0 (5/5/12)
+%
+% This template has been downloaded from: http://www.LaTeXTemplates.com
+% Original author: % Frits Wenneker (http://www.howtotex.com)
+% License: CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+% Modified by Alan G. Labouseur  - alan@labouseur.com
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[letterpaper, 10pt,DIV=13]{scrartcl} 
+
+\usepackage{qtree} %Tree creator
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage{amsmath,amsfonts,amsthm,xfrac} % Math packages
+\usepackage{sectsty} % Allows customizing section commands
+\usepackage{graphicx}
+\usepackage[lined,linesnumbered,commentsnumbered]{algorithm2e}
+\usepackage{listings}
+\usepackage{parskip}
+\usepackage{lastpage}
+
+\allsectionsfont{\normalfont\scshape} % Make all section titles in default font and small caps.
+
+\usepackage{fancyhdr} % Custom headers and footers
+\pagestyle{fancyplain} % Makes all pages in the document conform to the custom headers and footers
+
+\fancyhead{} % No page header - if you want one, create it in the same way as the footers below
+\fancyfoot[L]{} % Empty left footer
+\fancyfoot[C]{} % Empty center footer
+\fancyfoot[R]{page \thepage\ of \pageref{LastPage}} % Page numbering for right footer
+
+\renewcommand{\headrulewidth}{0pt} % Remove header underlines
+\renewcommand{\footrulewidth}{0pt} % Remove footer underlines
+\setlength{\headheight}{13.6pt} % Customize the height of the header
+
+\numberwithin{equation}{section} % Number equations within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{figure}{section} % Number figures within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+\numberwithin{table}{section} % Number tables within sections (i.e. 1.1, 1.2, 2.1, 2.2 instead of 1, 2, 3, 4)
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs.
+
+\binoppenalty=3000
+\relpenalty=3000
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % Create horizontal rule command with 1 argument of height
+
+\title{	
+   \normalfont \normalsize 
+   \textsc{CMPT 432 - Spring 2018 - Dr. Labouseur} \\[10pt] % Header stuff.
+   \horrule{0.5pt} \\[0.25cm] 	% Top horizontal rule
+   \huge Lab Four \\     	    % Assignment title
+   \horrule{0.5pt} \\[0.25cm] 	% Bottom horizontal rule
+}
+
+\author{Juan S. Vasquez \\ \normalsize jvasquez1@marist.edu}
+
+\date{\normalsize\today} 	% Today's date.
+
+\begin{document}
+\maketitle % Print the title
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 4.9
+%----------------------------------------------------------------------------------------
+\section{Exercise 4.9}
+
+1 S\hspace{0.3cm}$\rightarrow$ a S e   \\
+2  \hspace{0.5cm}   |\hspace{0.2cm}B       \\
+3 B\hspace{0.28cm}$\rightarrow$ b B e  \\
+4  \hspace{0.5cm}   |\hspace{0.2cm}C       \\
+5 C\hspace{0.28cm}$\rightarrow$ c C e  \\
+6  \hspace{0.5cm}   |\hspace{0.2cm}d
+
+\subsection{$First$ Set for Non-terminals}
+$First$(C): \\
+1 (c C E) = \{c\} \\
+2 (d) = \{d\} \\
+Final Answer: \{d,c\}
+
+$First$(B): \\
+1 (b B e) = \{b\} \\
+2 (C) = \{d,c\} \\
+Final Answer: \{d,c,b\}
+
+$First$(S): \\
+1 (a S e) = \{a\} \\
+2 (B) = \{d,c,b,\} \\
+Final Answer: \{d,c,b,a\}
+
+\pagebreak
+
+\subsection{$Follow$ Set for Non-terminals}
+$Follow$(C): \\
+1 B $\rightarrow$ \underline{C} = \{ \}\\
+2 C $\rightarrow$ c \underline{C} e = \{e\}\\
+Final Answer: \{e\}
+
+$Follow$(B): \\
+1 S $\rightarrow$ \underline{B} = \{ \}\\
+2 B $\rightarrow$ b \underline{B} e = \{e\}\\
+Final Answer: \{e\}
+
+$Follow$(S): \\
+1 S $\rightarrow$ a \underline{S} e = \{e\}\\
+Final Answer: \{e\}
+
+%----------------------------------------------------------------------------------------
+%   end EXERCISE 4.9
+%----------------------------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 5.10
+%----------------------------------------------------------------------------------------
+\section{Exercise 5.10}
+1 S\hspace{0.66cm}$\rightarrow$ Stmt \$ \\
+2 Stmt $\rightarrow$ if expr then Stmt else Stmt \\
+3  \hspace{0.9cm}   |\hspace{0.2cm}if expr then Stmt       \\
+4  \hspace{0.9cm}   |\hspace{0.2cm}other       \\
+
+if expr then if expr then other else other
+
+\subsection{First Parse Tree}
+
+\Tree[.S [.Stmt [.if-expr-then ]
+                [.Stmt [.if-expr-then ]
+                       [.Stmt [.other ]]]
+                       [.else ]
+                       [.Stmt [.other ]]]
+         [.\$ ]]
+
+\subsection{Second Parse Tree}
+
+\Tree[.S [.Stmt [.if-expr-then ]
+                [.Stmt [.if-expr-then ]
+                       [.Stmt [.other ]]
+                       [.else ]
+                       [.Stmt [.other ]]]]
+         [.\$ ]]
+
+
+
+%----------------------------------------------------------------------------------------
+%   end EXERCISE 5.10
+%----------------------------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------------------------
+%   start EXERCISE 4.4.3
+%----------------------------------------------------------------------------------------
+\section{Exercise 4.4.3}
+S -> SS+ | SS* | a
+
+\subsection{$First$ and $Follow$ Sets for Non-terminals}
+$First$(S): \\
+1 (S S +) = \{+,a,*\} \\
+2 (S S *) = \{+,a,*\} \\
+3 (a) = \{a\}\\
+Final Answer: \{+,a,*\}
+
+$Follow$(S): \\
+1 S $\rightarrow$ \underline{S} \underline{S} + = \{*,+,a\}\\
+2 S $\rightarrow$ \underline{S} \underline{S} * = \{+,*,a\}\\
+Final Answer: \{+,*,a\}
+
+%----------------------------------------------------------------------------------------
+%   end EXERCISE 4.4.3
+%----------------------------------------------------------------------------------------
+
+\pagebreak
+\end{document}
