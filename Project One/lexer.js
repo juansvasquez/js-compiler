@@ -12,10 +12,15 @@ function scanner(s){
 	var currentSubSize = 1;
 	var foundToken = [];
 	var isFound = false;
+	var isQuote = false;
 	var shinyName;
 	var shinyValue;
 	var shinyToken;
-	while(lastPosition!=s.length){
+	//while we haven't exhausted the string
+	while(lastPosition != s.length){
+		
+		//continue the scan while the substring size is less than 
+		//the OG string minus the last position looked at
 		do {
 			var subby = s.substr(lastPosition,currentSubSize); //current substring
 			
@@ -59,18 +64,10 @@ function scanner(s){
 				isFound = true;
 			}
 
-			else if(/^"[ a-z]+"$/.test(subby)){ //[ a-z & " " ] char finder
-				tokenArray.push(["T_QUOTE",'"']);
-				for(x = 1; x < subby.length-1; x++){
-					foundToken = ["T_CHAR",x,1];
-					shinyName = foundToken[0];
-					shinyValue = subby.substr(x,1); //location of token value and its length
-					shinyToken = [shinyName,shinyValue];
-					tokenArray.push(shinyToken); //add newly minted token to token list
-				}
-				tokenArray.push(["T_QUOTE",'"']);
-				lastPosition += subby.length-1;
-				currentSubSize = 1;
+			else if(/^"[ a-z]+"$/.test(subby)){ //[ string line e.g. "a" ] char finder
+				foundToken = [subby,subby.length];
+				isQuote = true;
+				isFound = true;
 			}
 
 			else if(/^[a-z]$/.test(subby)){ //[ a-z ] id finder
@@ -161,27 +158,54 @@ function scanner(s){
 				foundToken = ["ERROR: Unrecognized Token",lastPosition,1];
 				isFound = true;
 			}
-
+			
 			currentSubSize++;
 		}
-		while(currentSubSize<(s.length-lastPosition));
-			
-		if(isFound){
-			lastPosition += foundToken[2];
-			shinyName = foundToken[0];
-			shinyValue = s.substr(foundToken[1],foundToken[2]); //location of token value and its length
-			shinyToken = [shinyName,shinyValue]; //this is the token object
+		while(currentSubSize<=(s.length-lastPosition));
+		
+		//found a quote block!
+		if(isFound && isQuote){
+			lastPosition += foundToken[1];
+			tokenArray.push(["T_QUOTE",'"']);
+			for(x = 1; x < foundToken[1]-1; x++){
+			 	shinyName = "T_CHAR";
+			 	shinyValue = foundToken[0][x];
+			 	shinyToken = [shinyName, shinyValue];
+			 	tokenArray.push(shinyToken);
+			}
+			tokenArray.push(["T_QUOTE",'"']);
+			foundToken = [];
+			isFound = false;
+			isQuote = false;
+			currentSubSize = 1;
+		}
 
-			tokenArray.push(shinyToken); //add newly minted token to token list
+		//found a token!
+		else if(isFound){
+			//using the length of the token, we calculate the new lastPosition
+			lastPosition += foundToken[2];
+
+			shinyName = foundToken[0];
+
+			//we make a substring starting from the token's starting position to its end
+			//this is its "value"
+			shinyValue = s.substr(foundToken[1],foundToken[2]);
+			
+			//this is the token object
+			shinyToken = [shinyName,shinyValue];
+
+			//add newly minted token to token list
+			tokenArray.push(shinyToken);
+
 			//reset some variables for the next loop
 			foundToken = [];
 			isFound = false;
 			currentSubSize = 1;
 		} else {
-				break;
+			break;
 		}
-	}
-	return tokenArray; //array of TOKEN objects
+	}//end while
+	return tokenArray; //array of tokens
 }
 
 // This function should create an ordered list of tokens 
@@ -203,6 +227,7 @@ function lexer(s){
 	for(i = 0; i < strArr.length; i++){
 		correctLine++;
 		if(strArr[i]== ""){
+			tokArr.push(["NAT"]); //placeholder in the masterlist, NotAToken
 			continue;
 		} else {
 			tokenLine = scanner(strArr[i]); //scan current line, return its token list
