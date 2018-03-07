@@ -25,17 +25,17 @@ function scanner(s){
 			var subby = s.substr(lastPosition,currentSubSize); //current substring
 			
 			if(/^int$/.test(subby)){ //[ int ] keyword finder
-				foundToken = ["T_VAR_TYPE",lastPosition,3];
+				foundToken = ["T_VAR_TYPE_INT",lastPosition,3];
 				isFound = true;
 			}
 
 			else if(/^string$/.test(subby)){ //[ string ] keyword finder
-				foundToken = ["T_VAR_TYPE",lastPosition,6];
+				foundToken = ["T_VAR_TYPE_STRING",lastPosition,6];
 				isFound = true;
 			}
 
 			else if(/^boolean$/.test(subby)){ //[ boolean ] keyword finder
-				foundToken = ["T_VAR_TYPE",lastPosition,7];
+				foundToken = ["T_VAR_TYPE_BOOL",lastPosition,7];
 				isFound = true;
 			}
 
@@ -259,21 +259,25 @@ function lexer(s){
 				}
 
 				finalTokens+= "LEXER --> | "+tokenName+" [ "+tokenValue+" ] on line "+correctLine+"...\n";
-				progTok.push([tokenName,tokenValue]);
+				progTok.push([tokenName,tokenValue,correctLine]);
 
 				if(tokenName == "T_EOP" && errors == 1){
 					finalTokens+= "LEXER: Lex completed with 1 error\n\n";
+					finalTokens+= "PARSER: Skipped due to LEXER error\n\n";
+					finalTokens+= "CST for program "+program+": Skipped due to LEXER error\n\n\n";
 					errors = 0;
 				}
 				else if(tokenName == "T_EOP" && errors > 1){
 					finalTokens+= "LEXER: Lex completed with "+errors+" errors\n\n";
+					finalTokens+= "PARSER: Skipped due to LEXER errors\n\n";
+					finalTokens+= "CST for program "+program+": Skipped due to LEXER errors\n\n\n";
 					errors = 0;
 				}
 				else if(tokenName == "T_EOP"){
 					finalTokens+= "LEXER: Lex completed successfully\n\n";
 
 					//parse the program
-					finalTokens+= parser(progTok);
+					finalTokens+= parser(program,progTok);
 
 					//reset the program token list for the next program
 					progTok = [];
