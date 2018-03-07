@@ -213,7 +213,7 @@ function scanner(s){
 function lexer(s){
 	var cs = clean(s); //removes whitespace (not in strings) and comments from text input
 	var strArr = cs.split("\n"); //makes text input into an array of arrays, divided by newLines
-	var tokArr = []; //array of scanned lines
+	var progTok = []; //array of tokens for the current program
 	var tokenLine;
 	var finalTokens = ""; //string that will be sent to index.html
 	var errors = 0;
@@ -226,8 +226,8 @@ function lexer(s){
 	//for each substring (line) of the source code, generate its tokens
 	for(i = 0; i < strArr.length; i++){
 		correctLine++;
+		//if current line is empty
 		if(strArr[i]== ""){
-			tokArr.push(["NAT"]); //placeholder in the masterlist, NotAToken
 			continue;
 		} else {
 			tokenLine = scanner(strArr[i]); //scan current line, return its token list
@@ -239,8 +239,6 @@ function lexer(s){
 			}
 
 			EOPChecker = tokenLine[tokenLine.length-1]; //save the last token in the list
-
-			tokArr.push(tokenLine);//save the scanned line to the master list
 			
 			//for each token in the list, generate the verbose output
 			for(j = 0; j < tokenLine.length; j++){
@@ -255,13 +253,13 @@ function lexer(s){
 					}
 				}
 
-				//if we
+				//if we found an unrecognized token on the line
 				if(tokenName == "ERROR: Unrecognized Token"){
 					errors++;
 				}
 
 				finalTokens+= "LEXER --> | "+tokenName+" [ "+tokenValue+" ] on line "+correctLine+"...\n";
-				
+				progTok.push([tokenName,tokenValue]);
 
 				if(tokenName == "T_EOP" && errors == 1){
 					finalTokens+= "LEXER: Lex completed with 1 error\n\n";
@@ -273,6 +271,13 @@ function lexer(s){
 				}
 				else if(tokenName == "T_EOP"){
 					finalTokens+= "LEXER: Lex completed successfully\n\n";
+
+					//parse the program
+					finalTokens+= parser(progTok);
+
+					//reset the program token list for the next program
+					progTok = [];
+
 				}
 			}
 		}
