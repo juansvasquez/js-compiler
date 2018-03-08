@@ -3,7 +3,7 @@
 //  -Returns a string to be added to the final output in lexer.js
 function parser(n,a){
 	var finalParse = ""; //string that will be returned for each program
-	var parseErrors = 0;
+	var parseErrors = false;
 	var parseResult = [];
 
 	finalParse+= "PARSER: Parsing program "+n+"...\n";
@@ -13,34 +13,25 @@ function parser(n,a){
 	finalParse+= parseResult[1];
 
 	//no errors in parse!
-	if(parseErrors == 0){
+	if(parseErrors == false){
 		finalParse+= "PARSER: Parse completed successfully\n\n";
 		finalParse+= "CST for program "+n+"...\n";
 		finalParse+= parseResult[2];
 	} else {
-		finalParse+= "PARSER: Parse failed with "+parseErrors+" error(s)\n\n";
+		finalParse+= "PARSER: Parse failed with one or more error(s)\n\n";
 		finalParse+= "CST for program "+n+": Skipped due to PARSER error(s).\n\n\n";
 	}
 
 	
 	return finalParse;
-	// var tokens = "";
-	// if(a.length == 0){
-	// 	return "EMPTY\n\n\n";
-	// } else {
-	// 	for(k=0; k<a.length; k++){
-	// 		tokens+= "[" + a[k][0] + " , " + a[k][1] + "]";
-	// 	}
-	// 	return tokens +"\n\n\n";
-	// }
 }
 
-//takes in the token array, returns an array of the parse result [# errors found,parse,cst]
+//takes in the token array, returns an array of the parse result [error,parse,cst]
 function parse(array){
 	var currentToken = 0;
 	var parseString = "";
-	var cstString = "TODO";
-	var errorNum = 0;
+	var cstString = "";
+	var errors = false;
 	var cstDepth = 0;
 	var returnArr;
 
@@ -55,43 +46,68 @@ function parse(array){
 	// }
 
 	function match(t){
-		if(array[currentToken][0] != t){
-			parseString+= "PARSER: ERROR: Expected " + t + " got " + array[currentToken][0] + " with value '" + array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
-			errorNum++;
-			currentToken++;
+		if(array[currentToken][0] != t && errors == false){
+			parseString+= "PARSER: ERROR: Expected " + t + " got " + 
+			array[currentToken][0] + " with value '" + 
+			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
+			errors = true;
+		} else if(array[currentToken][0] != t){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
 		} else {
-			// cstDepth++;
-			// cstString+= treeMaker(cstDepth) + "[" + array[currentToken][1] + "]\n";
+			cstString+= "[" + array[currentToken][1] + "]\n";
 			currentToken++;
 		}
 	}
 
 	function parseProgram(){
 		parseString+= "PARSER: parseProgram()\n";
-		//cstString+= "<Program>\n";
+		cstString+= "<Program>\n";
 		parseBlock();
-		//cstDepth = 0;
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
 		match("T_EOP");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
 	}
 
 	function parseBlock(){
 		parseString+= "PARSER: parseBlock()\n";
-		//cstDepth++;
-		//cstString+= treeMaker(cstDepth) + "<Block>\n";
+		cstString+= "<Block>\n";
 		match("T_LBRACE");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
 		parseStatementList();
-		//cstDepth--;
 		match("T_RBRACE");
-		//cstDepth--;
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
 	}
 
 	function parseStatementList(){
 		parseString+= "PARSER: parseStatementList()\n";
-		if(array[currentToken][0]=="T_LBRACE"){
-			// cstString+= treeMaker(cstDepth) + "<Statement List>\n";
-			// cstDepth++;
+		cstString+= "<Statement List>\n";
+		if(array[currentToken][0]=="T_PRINT" || array[currentToken][0]=="T_ID" || 
+		   array[currentToken][0]=="T_VAR_TYPE_INT" || array[currentToken][0]=="T_VAR_TYPE_STRING" ||
+		   array[currentToken][0]=="T_VAR_TYPE_BOOLEAN" || array[currentToken][0]=="T_WHILE" ||
+		   array[currentToken][0]=="T_IF" || array[currentToken][0]=="T_LBRACE"){
 			parseStatement();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
 			parseStatementList();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
 		} else {
 			//empty set
 		}
@@ -99,14 +115,462 @@ function parse(array){
 
 	function parseStatement(){
 		parseString+= "PARSER: parseStatement()\n";
-		//cstString+= treeMaker(cstDepth) + "<Statement>\n";
+		cstString+= "<Statement>\n";
+		if(array[currentToken][0]=="T_PRINT"){
+			parsePrintStatement();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_ID"){
+			parseAssignmentStatement();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_VAR_TYPE_INT" || 
+				array[currentToken][0]=="T_VAR_TYPE_STRING" || 
+				array[currentToken][0]=="T_VAR_TYPE_BOOLEAN"){
+			parseVarDecl();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_WHILE"){
+			parseWhileStatement();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_IF"){
+			parseIfStatement();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_LBRACE"){
+			parseBlock();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		} else {
+			parseString+= "PARSER: ERROR: Expected print/id/int/string/boolean/while/if/lbrace got " + 
+			array[currentToken][0] + " with value '" + 
+			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
+			errors = true;
+		}
+	}
+
+	function parsePrintStatement(){
+		parseString+= "PARSER: parsePrintStatement()\n";
+		cstString+= "<Print Statement>\n";
+		match("T_PRINT");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+		match("T_LPAREN");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+		parseExpr();
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+		match("T_RPAREN");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+	}
+
+	function parseAssignmentStatement(){
+		parseString+= "PARSER: parseAssignmentStatement()\n";
+		cstString+= "<Assignment Statement>\n";
+		parseId();
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+		match("T_ASSIGN");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+		parseExpr();
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+	}
+
+	function parseVarDecl(){
+		parseString+= "PARSER: parseVarDecl()\n";
+		cstString+= "<Variable Declaration Statement>\n";
+		parseType();
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+		parseId();
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+	}
+
+	function parseWhileStatement(){
+		parseString+= "PARSER: parseWhileStatement()\n";
+		cstString+= "<While Statement>\n";
+		match("T_WHILE");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+		parseBooleanExpr();
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
 		parseBlock();
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+	}
+
+	function parseIfStatement(){
+		parseString+= "PARSER: parseIfStatement()\n";
+		cstString+= "<If Statement>\n";
+		match("T_IF");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+		parseBooleanExpr();
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+		parseBlock();
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+	}
+
+	function parseExpr(){
+		parseString+= "PARSER: parseExpr()\n";
+		cstString+= "<Expression>\n";
+		if(array[currentToken][0]=="T_DIGIT"){
+			parseIntExpr();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_QUOTE"){
+			parseStringExpr();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_LPAREN"){
+			parseBooleanExpr();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_ID"){
+			parseId();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		} else {
+			parseString+= "PARSER: ERROR: Expected T_DIGIT or T_QUOTE or T_LPAREN or T_ID got " + 
+			array[currentToken][0] + " with value '" + 
+			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
+			errors = true;
+		}
+	}
+
+	function parseIntExpr(){
+		parseString+= "PARSER: parseIntExpr()\n";
+		cstString+= "<Integer Expression>\n";
+		if(array[currentToken][0]=="T_DIGIT" && array[currentToken+1][0]=="T_ADD"){
+			parseDigit();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+			parseIntOp();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+			parseExpr();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_DIGIT"){
+			parseDigit();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		} else {
+			parseString+= "PARSER: ERROR: Expected T_DIGIT got " + 
+			array[currentToken][0] + " with value '" + 
+			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
+			errors = true;
+		}
+	}
+
+	function parseStringExpr(){
+		parseString+= "PARSER: parseStringExpr()\n";
+		cstString+= "<String Expression>\n";
+		match("T_QUOTE");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+		parseCharList();
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+		match("T_QUOTE");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+	}
+
+	function parseBooleanExpr(){
+		parseString+= "PARSER: parseBooleanExpr()\n";
+		cstString+= "<Boolean Expression>\n";
+		if(array[currentToken][0]=="T_LPAREN"){
+			match("T_LPAREN");
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+			parseExpr();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+			parseBoolOp();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+			parseExpr();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+			match("T_RPAREN");
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_FALSE" || array[currentToken][0]=="T_TRUE"){
+			parseBoolVal();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		} else {
+			parseString+= "PARSER: ERROR: Expected T_TRUE or T_FALSE or T_LPAREN got " + 
+			array[currentToken][0] + " with value '" + 
+			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
+			errors = true;
+		}
+	}
+
+	function parseId(){
+		parseString+= "PARSER: parseId()\n";
+		cstString+= "<ID>\n";
+		match("T_ID");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}		
+	}
+
+	function parseCharList(){
+		parseString+= "PARSER: parseCharList()\n";
+		cstString+= "<Character List>\n";
+		if(array[currentToken][0]=="T_CHAR"){
+			parseChar();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+			parseCharList();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_CHAR" && array[currentToken][1]==" "){
+			parseSpace();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+			parseCharList();
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		} else {
+			//empty set
+		}
+	}
+
+	function parseType(){
+		parseString+= "PARSER: parseType()\n";
+		cstString+= "<Type>\n";
+		if(array[currentToken][0]=="T_VAR_TYPE_INT"){
+			match("T_VAR_TYPE_INT");
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_VAR_TYPE_STRING"){
+			match("T_VAR_TYPE_STRING");
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_VAR_TYPE_BOOLEAN"){
+			match("T_VAR_TYPE_BOOLEAN");
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		} else {
+			parseString+= "PARSER: ERROR: Expected T_VAR_TYPE_INT/STRING/BOOLEAN got " + 
+			array[currentToken][0] + " with value '" + 
+			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
+			errors=true;
+		}
+	}
+
+	function parseChar(){
+		parseString+= "PARSER: parseChar()\n";
+		cstString+= "<Character>\n";
+		match("T_CHAR");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+	}
+
+	function parseSpace(){
+		parseString+= "PARSER: parseSpace()\n";
+		cstString+= "<Space Character>\n";
+		if(array[currentToken][1] != " "){
+			parseString+= "PARSER: ERROR: Expected ' ' got " + 
+			array[currentToken][0] + " with value '" + 
+			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
+			errors=true;
+		} else {
+			cstString+= "[" + array[currentToken][1] + "]\n";
+			currentToken++;
+		}
+	}
+
+	function parseDigit(){
+		parseString+= "PARSER: parseDigit()\n";
+		cstString+= "<Digit>\n";
+		match("T_DIGIT");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
+	}
+
+	function parseBoolOp(){
+		parseString+= "PARSER: parseBoolOp()\n";
+		cstString+= "<Boolean Operator>\n";
+		if(array[currentToken][0]=="T_EQ"){
+			match("T_EQ");
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_INEQ"){
+			match("T_INEQ");
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		} else {
+			parseString+= "PARSER: ERROR: Expected T_EQ or T_INEQ got " + 
+			array[currentToken][0] + " with value '" + 
+			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
+			errors=true;
+		}
+	}
+
+	function parseBoolVal(){
+		parseString+= "PARSER: parseBoolVal()\n";
+		cstString+= "<Boolean Value>\n";
+		if(array[currentToken][0]=="T_FALSE"){
+			match("T_FALSE");
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		}
+		else if(array[currentToken][0]=="T_TRUE"){
+			match("T_TRUE");
+			if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+		} else {
+			parseString+= "PARSER: ERROR: Expected T_TRUE or T_FALSE got " + 
+			array[currentToken][0] + " with value '" + 
+			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
+			errors = true;
+		}
+	}
+
+	function parseIntOp(){
+		parseString+= "PARSER: parseIntOp()\n";
+		cstString+= "<Addition>\n";
+		match("T_ADD");
+		if(errors){
+			returnArr = [errors,parseString,cstString];
+			return returnArr;
+		}
 	}
 
 	parseString+= "PARSER: parse()\n";
 
 	parseProgram();
 	
-	returnArr = [errorNum,parseString,cstString];
+	returnArr = [errors,parseString,cstString];
 	return returnArr;
 }

@@ -1,0 +1,23 @@
+Master List of Tokens and their Values:
+T_VAR_TYPE_INT    - int
+T_VAR_TYPE_STRING - string
+T_VAR_TYPE_BOOL   - boolean
+T_PRINT           - print
+T_WHILE           - while
+T_IF              - if
+T_FALSE           - false
+T_TRUE            - true
+T_ID              - a-z
+T_EQ              - ==
+T_INEQ            - !=
+T_ASSIGN          - =
+T_QUOTE           - "
+T_LBRACE          - {
+T_RBRACE          - }
+T_LPAREN          - (
+T_RPAREN          - )
+T_ADD             - +
+T_EOP	          - $
+T_DIGIT           - 0-9
+T_CHAR            - a-z, [space]
+ERROR  - Anything else
