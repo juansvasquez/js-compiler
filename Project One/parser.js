@@ -16,7 +16,7 @@ function parser(n,a){
 	if(parseErrors == false){
 		finalParse+= "PARSER: Parse completed successfully\n\n";
 		finalParse+= "CST for program "+n+"...\n";
-		finalParse+= parseResult[2];
+		finalParse+= parseResult[2]+"\n\n\n";
 	} else {
 		finalParse+= "PARSER: Parse failed with one or more error(s)\n\n";
 		finalParse+= "CST for program "+n+": Skipped due to PARSER error(s).\n\n\n";
@@ -35,15 +35,15 @@ function parse(array){
 	var cstDepth = 0;
 	var returnArr;
 
-	// function treeMaker(e){
-	// 	var treeBranch = "";
-	// 	if(e > 0){
-	// 		for(l = 0; l < e; l++){
-	// 			treeBranch+="-";
-	// 		}
-	// 	}
-	// 	return treeBranch;
-	// }
+	function treeMaker(e){
+		var treeBranch = "";
+		if(e > 0){
+			for(l = 0; l < e; l++){
+				treeBranch+="-";
+			}
+		}
+		return treeBranch;
+	}
 
 	function match(t){
 		if(array[currentToken][0] != t && errors == false){
@@ -55,7 +55,7 @@ function parse(array){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
 		} else {
-			cstString+= "[" + array[currentToken][1] + "]\n";
+			cstString+= treeMaker(cstDepth)+"[" + array[currentToken][1] + "]\n";
 			currentToken++;
 		}
 	}
@@ -77,7 +77,9 @@ function parse(array){
 
 	function parseBlock(){
 		parseString+= "PARSER: parseBlock()\n";
-		cstString+= "<Block>\n";
+		cstDepth++;
+		cstString+= treeMaker(cstDepth)+"<Block>\n";
+		cstDepth++;
 		match("T_LBRACE");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -85,6 +87,7 @@ function parse(array){
 		}
 		parseStatementList();
 		match("T_RBRACE");
+		cstDepth--;
 		if(errors){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
@@ -93,16 +96,18 @@ function parse(array){
 
 	function parseStatementList(){
 		parseString+= "PARSER: parseStatementList()\n";
-		cstString+= "<Statement List>\n";
+		cstString+= treeMaker(cstDepth)+"<Statement List>\n";
 		if(array[currentToken][0]=="T_PRINT" || array[currentToken][0]=="T_ID" || 
 		   array[currentToken][0]=="T_VAR_TYPE_INT" || array[currentToken][0]=="T_VAR_TYPE_STRING" ||
 		   array[currentToken][0]=="T_VAR_TYPE_BOOLEAN" || array[currentToken][0]=="T_WHILE" ||
 		   array[currentToken][0]=="T_IF" || array[currentToken][0]=="T_LBRACE"){
+			cstDepth++;
 			parseStatement();
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
 			}
+			cstDepth-=2;
 			parseStatementList();
 			if(errors){
 				returnArr = [errors,parseString,cstString];
@@ -115,7 +120,7 @@ function parse(array){
 
 	function parseStatement(){
 		parseString+= "PARSER: parseStatement()\n";
-		cstString+= "<Statement>\n";
+		cstString+= treeMaker(cstDepth)+"<Statement>\n";
 		if(array[currentToken][0]=="T_PRINT"){
 			parsePrintStatement();
 			if(errors){
@@ -169,7 +174,8 @@ function parse(array){
 
 	function parsePrintStatement(){
 		parseString+= "PARSER: parsePrintStatement()\n";
-		cstString+= "<Print Statement>\n";
+		cstDepth++;
+		cstString+= treeMaker(cstDepth)+"<Print Statement>\n";
 		match("T_PRINT");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -194,7 +200,8 @@ function parse(array){
 
 	function parseAssignmentStatement(){
 		parseString+= "PARSER: parseAssignmentStatement()\n";
-		cstString+= "<Assignment Statement>\n";
+		cstDepth++;
+		cstString+= treeMaker(cstDepth)+"<Assignment Statement>\n";
 		parseId();
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -214,7 +221,8 @@ function parse(array){
 
 	function parseVarDecl(){
 		parseString+= "PARSER: parseVarDecl()\n";
-		cstString+= "<Variable Declaration Statement>\n";
+		cstDepth++;
+		cstString+= treeMaker(cstDepth)+"<Variable Declaration Statement>\n";
 		parseType();
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -229,7 +237,8 @@ function parse(array){
 
 	function parseWhileStatement(){
 		parseString+= "PARSER: parseWhileStatement()\n";
-		cstString+= "<While Statement>\n";
+		cstDepth++;
+		cstString+= treeMaker(cstDepth)+"<While Statement>\n";
 		match("T_WHILE");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -249,7 +258,8 @@ function parse(array){
 
 	function parseIfStatement(){
 		parseString+= "PARSER: parseIfStatement()\n";
-		cstString+= "<If Statement>\n";
+		cstDepth++;
+		cstString+= treeMaker(cstDepth)+"<If Statement>\n";
 		match("T_IF");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -269,7 +279,7 @@ function parse(array){
 
 	function parseExpr(){
 		parseString+= "PARSER: parseExpr()\n";
-		cstString+= "<Expression>\n";
+		cstString+= treeMaker(cstDepth)+"<Expression>\n";
 		if(array[currentToken][0]=="T_DIGIT"){
 			parseIntExpr();
 			if(errors){
@@ -307,7 +317,7 @@ function parse(array){
 
 	function parseIntExpr(){
 		parseString+= "PARSER: parseIntExpr()\n";
-		cstString+= "<Integer Expression>\n";
+		cstString+= treeMaker(cstDepth)+"<Integer Expression>\n";
 		if(array[currentToken][0]=="T_DIGIT" && array[currentToken+1][0]=="T_ADD"){
 			parseDigit();
 			if(errors){
@@ -341,7 +351,7 @@ function parse(array){
 
 	function parseStringExpr(){
 		parseString+= "PARSER: parseStringExpr()\n";
-		cstString+= "<String Expression>\n";
+		cstString+= treeMaker(cstDepth)+"<String Expression>\n";
 		match("T_QUOTE");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -361,7 +371,7 @@ function parse(array){
 
 	function parseBooleanExpr(){
 		parseString+= "PARSER: parseBooleanExpr()\n";
-		cstString+= "<Boolean Expression>\n";
+		cstString+= treeMaker(cstDepth)+"<Boolean Expression>\n";
 		if(array[currentToken][0]=="T_LPAREN"){
 			match("T_LPAREN");
 			if(errors){
@@ -405,7 +415,7 @@ function parse(array){
 
 	function parseId(){
 		parseString+= "PARSER: parseId()\n";
-		cstString+= "<ID>\n";
+		cstString+= treeMaker(cstDepth)+"<ID>\n";
 		match("T_ID");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -415,7 +425,7 @@ function parse(array){
 
 	function parseCharList(){
 		parseString+= "PARSER: parseCharList()\n";
-		cstString+= "<Character List>\n";
+		cstString+= treeMaker(cstDepth)+"<Character List>\n";
 		if(array[currentToken][0]=="T_CHAR"){
 			parseChar();
 			if(errors){
@@ -446,7 +456,7 @@ function parse(array){
 
 	function parseType(){
 		parseString+= "PARSER: parseType()\n";
-		cstString+= "<Type>\n";
+		cstString+= treeMaker(cstDepth)+"<Type>\n";
 		if(array[currentToken][0]=="T_VAR_TYPE_INT"){
 			match("T_VAR_TYPE_INT");
 			if(errors){
@@ -477,7 +487,7 @@ function parse(array){
 
 	function parseChar(){
 		parseString+= "PARSER: parseChar()\n";
-		cstString+= "<Character>\n";
+		cstString+= treeMaker(cstDepth)+"<Character>\n";
 		match("T_CHAR");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -487,7 +497,7 @@ function parse(array){
 
 	function parseSpace(){
 		parseString+= "PARSER: parseSpace()\n";
-		cstString+= "<Space Character>\n";
+		cstString+= treeMaker(cstDepth)+"<Space Character>\n";
 		if(array[currentToken][1] != " "){
 			parseString+= "PARSER: ERROR: Expected ' ' got " + 
 			array[currentToken][0] + " with value '" + 
@@ -501,7 +511,7 @@ function parse(array){
 
 	function parseDigit(){
 		parseString+= "PARSER: parseDigit()\n";
-		cstString+= "<Digit>\n";
+		cstString+= treeMaker(cstDepth)+"<Digit>\n";
 		match("T_DIGIT");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -511,7 +521,7 @@ function parse(array){
 
 	function parseBoolOp(){
 		parseString+= "PARSER: parseBoolOp()\n";
-		cstString+= "<Boolean Operator>\n";
+		cstString+= treeMaker(cstDepth)+"<Boolean Operator>\n";
 		if(array[currentToken][0]=="T_EQ"){
 			match("T_EQ");
 			if(errors){
@@ -535,7 +545,7 @@ function parse(array){
 
 	function parseBoolVal(){
 		parseString+= "PARSER: parseBoolVal()\n";
-		cstString+= "<Boolean Value>\n";
+		cstString+= treeMaker(cstDepth)+"<Boolean Value>\n";
 		if(array[currentToken][0]=="T_FALSE"){
 			match("T_FALSE");
 			if(errors){
@@ -559,7 +569,7 @@ function parse(array){
 
 	function parseIntOp(){
 		parseString+= "PARSER: parseIntOp()\n";
-		cstString+= "<Addition>\n";
+		cstString+= treeMaker(cstDepth)+"<Addition>\n";
 		match("T_ADD");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
