@@ -1,0 +1,11 @@
+{"$"}$
+
+{"two
+lines"}$
+
+{thisisnotalexeme}$
+
+{
+	string a
+	a = "unterminated string
+}
