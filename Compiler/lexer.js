@@ -46,7 +46,7 @@ function scanner(s){
 			}
 
 			else if(/^boolean$/.test(subby)){ //[ boolean ] keyword finder
-				foundToken = ["T_VAR_TYPE_BOOL",lastPosition,7];
+				foundToken = ["T_VAR_TYPE_BOOLEAN",lastPosition,7];
 				isFound = true;
 			}
 

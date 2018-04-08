@@ -294,7 +294,9 @@ function parse(array){
 				return returnArr;
 			}
 		}
-		else if(array[currentToken][0]=="T_LPAREN"){
+    else if (array[currentToken][0] == "T_LPAREN" ||
+     array[currentToken][0] == "T_FALSE" ||
+     array[currentToken][0] == "T_TRUE"){
 			parseBooleanExpr();
 			if(errors){
 				returnArr = [errors,parseString,cstString];
@@ -308,7 +310,7 @@ function parse(array){
 				return returnArr;
 			}
 		} else {
-			parseString+= "PARSER: ERROR: Expected T_DIGIT or T_QUOTE or T_LPAREN or T_ID got " + 
+			parseString+= "PARSER: ERROR: Expected T_DIGIT or T_QUOTE or T_LPAREN or T_ID or T_TRUE or T_FALSE got " + 
 			array[currentToken][0] + " with value '" + 
 			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
 			errors = true;
