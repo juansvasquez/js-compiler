@@ -1,8 +1,19 @@
-function clean(s){
-	//removes whitespace (except newline) not in StringExpr
-	var cleaner = s.replace(/[\r\t\f\v ]+(?=([^"]*"[^"]*")*[^"]*$)/g, "");
-	var cleanest = cleaner.replace(/\/\*.*\*\//g, ""); //removes comments
-	return cleanest;
+function clean(a){
+  var newArr = [];
+  //for each substring
+  for(k = 0; k < a.length; k++){
+    //count the number of quotes
+    var quoteNum = a[k].split('"').length - 1;
+    //if number of quotes is even
+    if(quoteNum%2==0){
+      var cleaner = a[k].replace(/[\r\t\f\v ]+(?=([^"]*"[^"]*")*[^"]*$)/g, "");
+      var cleanest = cleaner.replace(/\/\*.*\*\//g, ""); //removes comments
+      newArr.push(cleanest);
+    } else {
+      newArr.push("*");
+    }
+  }
+  return newArr;
 }
 
 //Takes substring and makes tokens
@@ -147,7 +158,15 @@ function scanner(s){
 				}
 				foundToken = ["T_EOP",lastPosition,1];
 				isFound = true;
-			}
+      }
+      
+      else if (/\*$/.test(subby)) { //[ Unterminated String Flag ] symbol finder
+        if (isFound) { //if we've already found a token and hit this symbol
+          break;
+        }
+        foundToken = ["ERROR: There is an unterminated string", lastPosition, 1];
+        isFound = true;
+      }
 
 			else if(/^[0-9]$/.test(subby)){ //[ 0-9 ] digit finder
 				foundToken = ["T_DIGIT",lastPosition,1];
@@ -211,8 +230,8 @@ function scanner(s){
 // This function should create an ordered list of tokens 
 // and return a String version of it
 function lexer(s){
-	var cs = clean(s); //removes whitespace (not in strings) and comments from text input
-	var strArr = cs.split("\n"); //makes text input into an array of arrays, divided by newLines
+  var split = s.split("\n"); //makes text input into an array of substrings, each one a line
+	var strArr = clean(split); //removes whitespace (not in strings) and comments from text input
 	var progTok = []; //array of tokens for the current program
 	var tokenLine;
 	var finalTokens = ""; //string that will be sent to index.html
@@ -254,7 +273,7 @@ function lexer(s){
 				}
 
 				//if we found an unrecognized token on the line
-				if(tokenName == "ERROR: Unrecognized Token"){
+        if (tokenName == "ERROR: Unrecognized Token" || tokenName == "ERROR: There is an unterminated string"){
 					errors++;
 				}
 
@@ -287,7 +306,8 @@ function lexer(s){
 		}
 	}
 	if(tokenLine[tokenLine.length-1][0] != "T_EOP"){
-		finalTokens+= "LEXER: Warning! EOP Symbol not detected. Please add to text file.\n\n";
+		finalTokens+= "LEXER: Warning! EOP Symbol not detected, or on same line as unterminated string. Please fix.\n\n";
 	}
-	return finalTokens;
+  return finalTokens;
+  //return strArr;
 }
