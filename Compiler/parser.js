@@ -1,29 +1,39 @@
 //Parser function
 //  -Receives an Array of tokens for a "program"
 //  -Returns a string to be added to the final output in lexer.js
-function parser(n,a){
-	var finalParse = ""; //string that will be returned for each program
+function parser(n,a,b){
+  var verboseParse = ""; //string that will be returned for each program (verbose)
+  var minParse = ""; //string that will be returned for each program (minimal)
 	var parseErrors = false;
 	var parseResult = [];
 
-	finalParse+= "PARSER: Parsing program "+n+"...\n";
+  verboseParse+= "PARSER: Parsing program " + n + "...\n";
+  minParse+= "PARSER: Parsing program " + n + "...\n";
 	
 	parseResult = parse(a);
 	parseErrors = parseResult[0];
-	finalParse+= parseResult[1];
+	verboseParse+= parseResult[1];
 
 	//no errors in parse!
 	if(parseErrors == false){
-		finalParse+= "PARSER: Parse completed successfully\n\n";
-		finalParse+= "CST for program "+n+"...\n";
-		finalParse+= parseResult[2]+"\n\n\n";
+    verboseParse+= "PARSER: Parse completed successfully\n\n";
+    minParse+= "PARSER: Parse completed successfully\n\n";
+    verboseParse+= "CST for program " + n + "...\n";
+    minParse+= "CST for program " + n + "...\n";
+    verboseParse+= parseResult[2]+"\n\n\n";
+    minParse+= parseResult[2] + "\n\n\n";
 	} else {
-		finalParse+= "PARSER: Parse failed with one or more error(s)\n\n";
-		finalParse+= "CST for program "+n+": Skipped due to PARSER error(s).\n\n\n";
+    verboseParse+= "PARSER: Parse failed with one or more error(s)\n\n";
+    minParse+= "PARSER: Parse failed with one or more error(s)\n\n";
+    verboseParse+= "CST for program "+n+": Skipped due to PARSER error(s).\n\n\n";
+    minParse+= "CST for program " + n + ": Skipped due to PARSER error(s).\n\n\n";
 	}
 
-	
-	return finalParse;
+	if (b == true) {
+    return verboseParse;
+  } else {
+    return minParse;
+  }
 }
 
 //takes in the token array, returns an array of the parse result [error,parse,cst]

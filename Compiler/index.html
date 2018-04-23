@@ -14,23 +14,29 @@
   <body>
     <div class="container">
       <h1>Juan's Compiler</h1>
+      <input type="checkbox" id="verboseCheck" checked> Verbose Mode?</input>
       <div class="row"> 
           <div class="col-sm-5">
-            <textarea id="textArea" cols="60" rows="20"></textarea>
+            <textarea id="inputArea" cols="60" rows="20"></textarea>
             <div>
               <button type="button" onclick="codeSubmit()">Submit Code</button>
             </div>
           </div>
           <!--token output displayed below-->
           <p>Output:</p>
-          <div class="col-sm-7" id="tokenDisplayArea"></div>
+          <div class="col-sm-7" id="outputArea"></div>
       </div>
       <script type="text/javascript" src="parser.js"></script>
       <script type="text/javascript" src="lexer.js"></script>
       <script>
         function codeSubmit(){
-          var code = document.getElementById("textArea").value;
-          document.getElementById("tokenDisplayArea").innerText = lexer(code);
+          var code = document.getElementById("inputArea").value;
+          var checkBox = document.getElementById("verboseCheck");
+          if (checkBox.checked == true) {
+            document.getElementById("outputArea").innerText = lexer(code,true);
+          } else {
+            document.getElementById("outputArea").innerText = lexer(code,false);
+          }
         }
       </script>
     </div>

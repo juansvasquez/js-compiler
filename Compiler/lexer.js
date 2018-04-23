@@ -229,19 +229,21 @@ function scanner(s){
 
 // This function should create an ordered list of tokens 
 // and return a String version of it
-function lexer(s){
+function lexer(s,b){
   var split = s.split("\n"); //makes text input into an array of substrings, each one a line
 	var strArr = clean(split); //removes whitespace (not in strings) and comments from text input
 	var progTok = []; //array of tokens for the current program
 	var tokenLine;
-	var finalTokens = ""; //string that will be sent to index.html
+  var verboseMessage = ""; //string that will be sent to index.html
+  var minMessage = "";
 	var errors = 0;
 	var program = 1;
 	var correctLine = 0;
 	var EOPChecker = [];
 	//Verbose Mode Message
-	finalTokens+= "DEBUG: Running in verbose mode\n\n";
-	finalTokens+= "LEXER: Lexing program "+program+"...\n";
+	verboseMessage+= "DEBUG: Running in verbose mode\n\n";
+  verboseMessage+= "LEXER: Lexing program "+program+"...\n";
+  minMessage+= "LEXER: Lexing program " + program + "...\n";
 	//for each substring (line) of the source code, generate its tokens
 	for(i = 0; i < strArr.length; i++){
 		correctLine++;
@@ -254,7 +256,8 @@ function lexer(s){
 			//if the previous line ended in a EOP, we are in a new program
 			if(EOPChecker[0] == "T_EOP"){
 				program++;
-				finalTokens+= "LEXER: Lexing program "+program+"...\n";
+        verboseMessage+= "LEXER: Lexing program "+program+"...\n";
+        minMessage+= "LEXER: Lexing program " + program + "...\n";
 			}
 
 			EOPChecker = tokenLine[tokenLine.length-1]; //save the last token in the list
@@ -268,7 +271,8 @@ function lexer(s){
 				if(j > 0 ){
 					if(tokenLine[j-1][0] == "T_EOP"){
 						program++;
-						finalTokens+= "LEXER: Lexing program "+program+"...\n";
+            verboseMessage+= "LEXER: Lexing program "+program+"...\n";
+            minMessage+= "LEXER: Lexing program " + program + "...\n";
 					}
 				}
 
@@ -277,26 +281,37 @@ function lexer(s){
 					errors++;
 				}
 
-				finalTokens+= "LEXER --> | "+tokenName+" [ "+tokenValue+" ] on line "+correctLine+"...\n";
+				verboseMessage+= "LEXER --> | "+tokenName+" [ "+tokenValue+" ] on line "+correctLine+"...\n";
 				progTok.push([tokenName,tokenValue,correctLine]);
 
 				if(tokenName == "T_EOP" && errors == 1){
-					finalTokens+= "LEXER: Lex completed with 1 error\n\n";
-					finalTokens+= "PARSER: Skipped due to LEXER error\n\n";
-					finalTokens+= "CST for program "+program+": Skipped due to LEXER error\n\n\n";
+          verboseMessage+= "LEXER: Lex completed with 1 error\n\n";
+          minMessage+= "LEXER: Lex completed with 1 error\n\n";
+          verboseMessage+= "PARSER: Skipped due to LEXER error\n\n";
+          minMessage+= "PARSER: Skipped due to LEXER error\n\n";
+          verboseMessage+= "CST for program "+program+": Skipped due to LEXER error\n\n\n";
+          minMessage+= "CST for program " + program + ": Skipped due to LEXER error\n\n\n";
 					errors = 0;
 				}
 				else if(tokenName == "T_EOP" && errors > 1){
-					finalTokens+= "LEXER: Lex completed with "+errors+" errors\n\n";
-					finalTokens+= "PARSER: Skipped due to LEXER errors\n\n";
-					finalTokens+= "CST for program "+program+": Skipped due to LEXER errors\n\n\n";
+          verboseMessage+= "LEXER: Lex completed with "+errors+" errors\n\n";
+          minMessage+= "LEXER: Lex completed with " + errors + " errors\n\n";
+          verboseMessage+= "PARSER: Skipped due to LEXER errors\n\n";
+          minMessage+= "PARSER: Skipped due to LEXER errors\n\n";
+          verboseMessage+= "CST for program "+program+": Skipped due to LEXER errors\n\n\n";
+          minMessage+= "CST for program " + program + ": Skipped due to LEXER errors\n\n\n"
 					errors = 0;
 				}
 				else if(tokenName == "T_EOP"){
-					finalTokens+= "LEXER: Lex completed successfully\n\n";
+          verboseMessage+= "LEXER: Lex completed successfully\n\n";
+          minMessage+= "LEXER: Lex completed successfully\n\n";
 
-					//parse the program
-					finalTokens+= parser(program,progTok);
+          //parse the program
+          if (b == true) {
+            verboseMessage+= parser(program,progTok,true);
+          } else {
+            minMessage+= parser(program,progTok,false)
+          }
 
 					//reset the program token list for the next program
 					progTok = [];
@@ -306,8 +321,12 @@ function lexer(s){
 		}
 	}
 	if(tokenLine[tokenLine.length-1][0] != "T_EOP"){
-		finalTokens+= "LEXER: Warning! EOP Symbol not detected, or on same line as unterminated string. Please fix.\n\n";
-	}
-  return finalTokens;
-  //return strArr;
+    verboseMessage+= "LEXER: Warning! EOP Symbol not detected, or on same line as unterminated string. Please fix.\n\n";
+    minMessage+= "LEXER: Warning! EOP Symbol not detected, or on same line as unterminated string. Please fix.\n\n";
+  }
+  if (b == true){
+    return verboseMessage;
+  } else {
+    return minMessage;
+  }
 }
