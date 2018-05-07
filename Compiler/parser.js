@@ -41,6 +41,8 @@ function parser(n,a,b){
   }
 }
 
+var asTree = new Tree();
+
 //takes in the token array, returns an array of the parse result [error,parse,cst]
 function parse(array){
 	var currentToken = 0;
@@ -50,13 +52,20 @@ function parse(array){
 	var errors = false;
   var cstDepth = 0;
   var astDepth = 0;
+
+  //Tree Object Vars
+  //var asTree = new Tree();
+  var scope = -1;
+  var blockList = [];
+  var string = "";
+
   var returnArr;
   
   parseString += "PARSER: parse()\n";
 
   parseProgram();
 
-  returnArr = [errors, parseString, cstString, astString];
+  returnArr = [errors, parseString, cstString, astString, asTree];
   return returnArr;
 
 	function treeMaker(e){
@@ -87,7 +96,7 @@ function parse(array){
 	function parseProgram(){
 		parseString+= "PARSER: parseProgram()\n";
 		cstString+= "<Program>\n";
-		parseBlock();
+		parseBlock([0]);
 		if(errors){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
@@ -99,7 +108,7 @@ function parse(array){
 		}
 	}
 
-	function parseBlock(){
+	function parseBlock(arr){
 		parseString+= "PARSER: parseBlock()\n";
     
     //CST
@@ -110,12 +119,29 @@ function parse(array){
     astString+= treeMaker(astDepth)+"< BLOCK >\n";
     astDepth++;
 
+    //Tree
+    scope++;
+    blockList.push(["BLOCK", scope, array[currentToken][2]]); //add block to blocklist
+
+    if (arr.length == 1){
+      if (scope > 0){
+        asTree.add(blockList[scope],blockList[scope-1]); //parent will be previous scope's block node
+      } else {
+        asTree.add(blockList[scope]);
+      }
+    } else {
+      asTree.add(blockList[scope], arr); //parent will be if or while
+    }
+
 		match("T_LBRACE");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
-		}
-		parseStatementList();
+    }
+    parseStatementList();
+    
+    scope--;
+
 		match("T_RBRACE");
     
     cstDepth--;
@@ -196,7 +222,7 @@ function parse(array){
 			}
 		}
 		else if(array[currentToken][0]=="T_LBRACE"){
-			parseBlock();
+			parseBlock([0]);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
@@ -217,6 +243,10 @@ function parse(array){
     cstString+= treeMaker(cstDepth)+"<Print Statement>\n";
     //AST
     astString+= treeMaker(astDepth) + "< Print Statement >\n";
+
+    //Tree
+    var printNode = ["Print Statement", scope, array[currentToken][2]];
+    asTree.add(printNode,blockList[scope]); //add [print node, parent block]
     
 		match("T_PRINT");
 		if(errors){
@@ -231,7 +261,7 @@ function parse(array){
     
     astDepth++;
 
-		parseExpr();
+		parseExpr(printNode);
 		if(errors){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
@@ -256,7 +286,12 @@ function parse(array){
     astString += treeMaker(astDepth) + "< Assignment Statement >\n";
     astDepth++;
     
-    parseId();
+    //Tree
+    var assignmentNode = ["Assignment Statement", scope, array[currentToken][2]];
+
+    asTree.add(assignmentNode, blockList[scope]); //add [assignment node, parent block]
+
+    parseId(assignmentNode);
 		if(errors){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
@@ -266,7 +301,7 @@ function parse(array){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
 		}
-    parseExpr();
+    parseExpr(assignmentNode);
     
     astDepth--;
 
@@ -286,12 +321,17 @@ function parse(array){
     astString += treeMaker(astDepth) + "< Variable Declaration >\n";
     astDepth++;
 
-		parseType();
+    //Tree
+    var declarationNode = ["Variable Declaration", scope, array[currentToken][2]];
+
+    asTree.add(declarationNode, blockList[scope]); //add [variable decl node, parent block]
+
+		parseType(declarationNode);
 		if(errors){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
 		}
-    parseId();
+    parseId(declarationNode);
     
     astDepth--;
 
@@ -309,17 +349,23 @@ function parse(array){
     //AST
     astString += treeMaker(astDepth) + "< While Statement >\n";
     astDepth++;
+
+    //Tree
+    var whileNode = ["While Statement", scope, array[currentToken][2]];
+
+    asTree.add(whileNode, blockList[scope]); //add [while node, parent block]
+
 		match("T_WHILE");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
 		}
-		parseBooleanExpr();
+		parseBooleanExpr(whileNode);
 		if(errors){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
 		}
-    parseBlock();
+    parseBlock(whileNode);
     
     astDepth--;
 
@@ -338,17 +384,22 @@ function parse(array){
     astString += treeMaker(astDepth) + "< If Statement >\n";
     astDepth++;
 
+    //Tree
+    var ifNode = ["If Statement", scope, array[currentToken][2]];
+
+    asTree.add(ifNode, blockList[scope]); //add [if node, parent block]
+
 		match("T_IF");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
 		}
-		parseBooleanExpr();
+		parseBooleanExpr(ifNode);
 		if(errors){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
 		}
-    parseBlock();
+    parseBlock(ifNode);
     
     astDepth--;
 
@@ -358,21 +409,19 @@ function parse(array){
 		}
 	}
 
-	function parseExpr(){
+	function parseExpr(arr){
 		parseString+= "PARSER: parseExpr()\n";
     cstString+= treeMaker(cstDepth)+"<Expression>\n";
 
-    //astDepth++;
-
 		if(array[currentToken][0]=="T_DIGIT"){
-			parseIntExpr();
+			parseIntExpr(arr);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
 			}
 		}
 		else if(array[currentToken][0]=="T_QUOTE"){
-			parseStringExpr();
+			parseStringExpr(arr);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
@@ -381,14 +430,14 @@ function parse(array){
     else if (array[currentToken][0] == "T_LPAREN" ||
      array[currentToken][0] == "T_FALSE" ||
      array[currentToken][0] == "T_TRUE"){
-			parseBooleanExpr();
+			parseBooleanExpr(arr);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
 			}
 		}
 		else if(array[currentToken][0]=="T_ID"){
-			parseId();
+			parseId(arr);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
@@ -399,10 +448,9 @@ function parse(array){
 			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
 			errors = true;
 		}
-    //astDepth--;
   }
 
-	function parseIntExpr(){
+	function parseIntExpr(arr){
     parseString+= "PARSER: parseIntExpr()\n";
     //CST
     cstString+= treeMaker(cstDepth)+"<Integer Expression>\n";
@@ -410,7 +458,13 @@ function parse(array){
       //AST
       astString += treeMaker(astDepth) + "< Add >\n";
       astDepth++;
-			parseDigit();
+
+      //Tree
+      var addNode = ["Add", scope, array[currentToken][2]];
+
+      asTree.add(addNode, arr); //add [add node, parent]
+
+			parseDigit(addNode);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
@@ -420,7 +474,7 @@ function parse(array){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
 			}
-			parseExpr();
+			parseExpr(addNode);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
@@ -428,7 +482,7 @@ function parse(array){
       astDepth--;
 		}
 		else if(array[currentToken][0]=="T_DIGIT"){
-			parseDigit();
+			parseDigit(arr);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
@@ -442,11 +496,15 @@ function parse(array){
     //astDepth--;
 	}
 
-	function parseStringExpr(){
+	function parseStringExpr(arr){
 		parseString+= "PARSER: parseStringExpr()\n";
     cstString+= treeMaker(cstDepth)+"<String Expression>\n";
     //AST
     astString += treeMaker(astDepth) + "[ ";
+
+    string = ""; //reset variable
+    var stringLine = array[currentToken][2];
+
 		match("T_QUOTE");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -464,31 +522,42 @@ function parse(array){
     }
     //AST
     astString += " ]\n";
+    //ADD THE RIGHT STRING NODE TO THE AST
+    //Tree
+    var stringNode = [string, scope, stringLine];
+    asTree.add(stringNode, arr); //add [string node, parent]
+    string = ""; //reset variable
+
 	}
 
-	function parseBooleanExpr(){
+	function parseBooleanExpr(arr){
 		parseString+= "PARSER: parseBooleanExpr()\n";
 		cstString+= treeMaker(cstDepth)+"<Boolean Expression>\n";
 		if(array[currentToken][0]=="T_LPAREN"){
       //AST
       astString += treeMaker(astDepth) + "< Boolean Expression >\n";
       astDepth++;
+
+      //Tree
+      var boolExpNode = ["Boolean Expression", scope, array[currentToken][2]];
+      asTree.add(boolExpNode, arr); //add [bool exp node, parent block]
+
 			match("T_LPAREN");
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
 			}
-			parseExpr();
+			parseExpr(boolExpNode);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
 			}
-			parseBoolOp();
+			parseBoolOp(boolExpNode);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
 			}
-			parseExpr();
+			parseExpr(boolExpNode);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
@@ -501,7 +570,7 @@ function parse(array){
       astDepth--;
 		}
 		else if(array[currentToken][0]=="T_FALSE" || array[currentToken][0]=="T_TRUE"){
-			parseBoolVal();
+			parseBoolVal(arr);
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
@@ -514,11 +583,16 @@ function parse(array){
 		}
 	}
 
-	function parseId(){
+	function parseId(arr){
 		parseString+= "PARSER: parseId()\n";
     cstString+= treeMaker(cstDepth)+"<ID>\n";
+    //AST
     astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
-		match("T_ID");
+    
+    //Tree
+    asTree.add(array[currentToken], arr); //add [id node, parent]
+    
+    match("T_ID");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
 			return returnArr;
@@ -528,20 +602,20 @@ function parse(array){
 	function parseCharList(){
 		parseString+= "PARSER: parseCharList()\n";
 		cstString+= treeMaker(cstDepth)+"<Character List>\n";
-		if(array[currentToken][0]=="T_CHAR"){
+    if (array[currentToken][0] == "T_CHAR" && array[currentToken][1] == " ") {
+      parseSpace();
+      if (errors) {
+        returnArr = [errors, parseString, cstString];
+        return returnArr;
+      }
+      parseCharList();
+      if (errors) {
+        returnArr = [errors, parseString, cstString];
+        return returnArr;
+      }
+    }
+    else if(array[currentToken][0]=="T_CHAR"){
 			parseChar();
-			if(errors){
-				returnArr = [errors,parseString,cstString];
-				return returnArr;
-			}
-			parseCharList();
-			if(errors){
-				returnArr = [errors,parseString,cstString];
-				return returnArr;
-			}
-		}
-		else if(array[currentToken][0]=="T_CHAR" && array[currentToken][1]==" "){
-			parseSpace();
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
@@ -556,12 +630,14 @@ function parse(array){
 		}
 	}
 
-	function parseType(){
+	function parseType(arr){
 		parseString+= "PARSER: parseType()\n";
-		cstString+= treeMaker(cstDepth)+"<Type>\n";
+    cstString+= treeMaker(cstDepth)+"<Type>\n";
+    //AST
+    astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
+    //Tree
+    asTree.add(array[currentToken], arr); //add [type node, parent]
 		if(array[currentToken][0]=="T_VAR_TYPE_INT"){
-      //AST
-      astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
 			match("T_VAR_TYPE_INT");
 			if(errors){
 				returnArr = [errors,parseString,cstString];
@@ -569,8 +645,6 @@ function parse(array){
 			}
 		}
 		else if(array[currentToken][0]=="T_VAR_TYPE_STRING"){
-      //AST
-      astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
 			match("T_VAR_TYPE_STRING");
 			if(errors){
 				returnArr = [errors,parseString,cstString];
@@ -578,8 +652,6 @@ function parse(array){
 			}
 		}
 		else if(array[currentToken][0]=="T_VAR_TYPE_BOOLEAN"){
-      //AST
-      astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
 			match("T_VAR_TYPE_BOOLEAN");
 			if(errors){
 				returnArr = [errors,parseString,cstString];
@@ -598,6 +670,7 @@ function parse(array){
     cstString+= treeMaker(cstDepth)+"<Character>\n";
     //AST
     astString += array[currentToken][1];
+    string += array[currentToken][1];
 		match("T_CHAR");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -610,23 +683,25 @@ function parse(array){
     cstString+= treeMaker(cstDepth)+"<Space Character>\n";
     //AST
     astString += array[currentToken][1];
-
+    string += array[currentToken][1];
 		if(array[currentToken][1] != " "){
 			parseString+= "PARSER: ERROR: Expected ' ' got " + 
 			array[currentToken][0] + " with value '" + 
 			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
 			errors=true;
 		} else {
-			cstString+= "[" + array[currentToken][1] + "]\n";
+      cstString += treeMaker(cstDepth) +"[" + array[currentToken][1] + "]\n";
 			currentToken++;
 		}
 	}
 
-	function parseDigit(){
+	function parseDigit(arr){
 		parseString+= "PARSER: parseDigit()\n";
     cstString+= treeMaker(cstDepth)+"<Digit>\n";
     //AST
     astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
+    //Tree
+    asTree.add(array[currentToken], arr); //add [type node, parent]
 		match("T_DIGIT");
 		if(errors){
 			returnArr = [errors,parseString,cstString];
@@ -634,12 +709,14 @@ function parse(array){
 		}
 	}
 
-	function parseBoolOp(){
+	function parseBoolOp(arr){
 		parseString+= "PARSER: parseBoolOp()\n";
-		cstString+= treeMaker(cstDepth)+"<Boolean Operator>\n";
+    cstString+= treeMaker(cstDepth)+"<Boolean Operator>\n";
+    //AST
+    astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
+    //Tree
+    asTree.add(array[currentToken], arr); //add [bool op node, parent]
 		if(array[currentToken][0]=="T_EQ"){
-      //AST
-      astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
 			match("T_EQ");
 			if(errors){
 				returnArr = [errors,parseString,cstString];
@@ -647,8 +724,6 @@ function parse(array){
 			}
 		}
 		else if(array[currentToken][0]=="T_INEQ"){
-      //AST
-      astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
 			match("T_INEQ");
 			if(errors){
 				returnArr = [errors,parseString,cstString];
@@ -662,12 +737,14 @@ function parse(array){
 		}
 	}
 
-	function parseBoolVal(){
+	function parseBoolVal(arr){
 		parseString+= "PARSER: parseBoolVal()\n";
-		cstString+= treeMaker(cstDepth)+"<Boolean Value>\n";
+    cstString+= treeMaker(cstDepth)+"<Boolean Value>\n";
+    //AST
+    astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
+    //Tree
+    asTree.add(array[currentToken], arr); //add [bool val node, parent]
 		if(array[currentToken][0]=="T_FALSE"){
-      //AST
-      astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
 			match("T_FALSE");
 			if(errors){
 				returnArr = [errors,parseString,cstString];
@@ -675,8 +752,6 @@ function parse(array){
 			}
 		}
 		else if(array[currentToken][0]=="T_TRUE"){
-      //AST
-      astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
 			match("T_TRUE");
 			if(errors){
 				returnArr = [errors,parseString,cstString];

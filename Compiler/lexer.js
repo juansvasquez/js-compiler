@@ -16,8 +16,8 @@ function clean(a){
   return newArr;
 }
 
-//Takes substring and makes tokens
-function scanner(s){
+//Takes substring and line number and makes tokens
+function scanner(s,n){
 	var tokenArray = [];
 	var lastPosition = 0;
 	var currentSubSize = 1;
@@ -26,7 +26,7 @@ function scanner(s){
 	var isQuote = false;
 	var shinyName;
 	var shinyValue;
-	var shinyToken;
+  var shinyToken;
 	//while we haven't exhausted the string
 	while(lastPosition != s.length){
 		
@@ -185,14 +185,14 @@ function scanner(s){
 		//found a quote block!
 		if(isFound && isQuote){
 			lastPosition += foundToken[1];
-			tokenArray.push(["T_QUOTE",'"']);
+			tokenArray.push(["T_QUOTE",'"',n]);
 			for(x = 1; x < foundToken[1]-1; x++){
 			 	shinyName = "T_CHAR";
 			 	shinyValue = foundToken[0][x];
-			 	shinyToken = [shinyName, shinyValue];
+			 	shinyToken = [shinyName, shinyValue,n];
 			 	tokenArray.push(shinyToken);
 			}
-			tokenArray.push(["T_QUOTE",'"']);
+			tokenArray.push(["T_QUOTE",'"',n]);
 			foundToken = [];
 			isFound = false;
 			isQuote = false;
@@ -211,7 +211,7 @@ function scanner(s){
 			shinyValue = s.substr(foundToken[1],foundToken[2]);
 			
 			//this is the token object
-			shinyToken = [shinyName,shinyValue];
+			shinyToken = [shinyName,shinyValue,n];
 
 			//add newly minted token to token list
 			tokenArray.push(shinyToken);
@@ -251,7 +251,7 @@ function lexer(s,b){
 		if(strArr[i]== ""){
 			continue;
 		} else {
-			tokenLine = scanner(strArr[i]); //scan current line, return its token list
+			tokenLine = scanner(strArr[i],correctLine); //scan current line, return its token list
 			
 			//if the previous line ended in a EOP, we are in a new program
 			if(EOPChecker[0] == "T_EOP"){
