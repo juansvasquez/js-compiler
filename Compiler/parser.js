@@ -27,6 +27,10 @@ function parser(n,a,b){
     verboseParse += parseResult[3] + "\n\n";
     minParse += parseResult[3] + "\n\n";
 
+    //no errors in parse, then we can semantic analize/create and return the symbol table
+    verboseParse += semantic(asTree); //returns string with errors/warnings if encountered else symbol table
+    minParse += semantic(asTree);
+
 	} else {
     verboseParse+= "PARSER: Parse failed with one or more error(s)\n\n";
     minParse+= "PARSER: Parse failed with one or more error(s)\n\n";
@@ -54,7 +58,6 @@ function parse(array){
   var astDepth = 0;
 
   //Tree Object Vars
-  //var asTree = new Tree();
   var scope = -1;
   var blockList = [];
   var string = "";
@@ -65,7 +68,7 @@ function parse(array){
 
   parseProgram();
 
-  returnArr = [errors, parseString, cstString, astString, asTree];
+  returnArr = [errors, parseString, cstString, astString];
   return returnArr;
 
 	function treeMaker(e){
