@@ -31,7 +31,7 @@ class Tree {
     var queue = [this.root];
     while (queue.length) {
       var node = queue.shift();
-      if (this.checkArrs(node.data,data)) {
+      if (this.checkArrs(node.data, data)) {
         return node;
       }
       for (var i = 0; i < node.children.length; i++) {
@@ -89,6 +89,6 @@ tree.add(["String Expression", "hello", 7], ["Assignment Statement", 1, 7]);
 //console.log(tree.root.children[0].data);
 */
 
-//STATEMENTS: [NAME, SCOPE, LINE NUMBER]
-//TOKENS: [NAME, VALUE, LINE NUMBER]
+//STATEMENTS: [NAME, LINE NUMBER, SCOPE]
+//TOKENS: [NAME, VALUE, LINE NUMBER,SCOPE]
 //*NO CHAR TOKENS IN THE AST*

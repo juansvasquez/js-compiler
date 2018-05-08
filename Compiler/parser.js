@@ -5,7 +5,7 @@ function parser(n,a,b){
   var verboseParse = ""; //string that will be returned for each program (verbose)
   var minParse = ""; //string that will be returned for each program (minimal)
 	var parseErrors = false;
-	var parseResult = [];
+  var parseResult = [];
 
   verboseParse+= "PARSER: Parsing program " + n + "...\n";
   minParse+= "PARSER: Parsing program " + n + "...\n";
@@ -26,10 +26,12 @@ function parser(n,a,b){
     minParse += "AST for program " + n + "...\n";
     verboseParse += parseResult[3] + "\n\n";
     minParse += parseResult[3] + "\n\n";
+    minParse += parseResult[5];
 
     //no errors in parse, then we can semantic analize/create and return the symbol table
-    verboseParse += semantic(asTree); //returns string with errors/warnings if encountered else symbol table
-    minParse += semantic(asTree);
+    console.log(parseResult[4].root);
+    //verboseParse += semantic(parseResult[4],parseResult[5]); //returns string with errors/warnings if encountered else symbol table
+    //minParse += semantic(parseResult[4],parseResult[5]);
 
 	} else {
     verboseParse+= "PARSER: Parse failed with one or more error(s)\n\n";
@@ -45,10 +47,8 @@ function parser(n,a,b){
   }
 }
 
-var asTree = new Tree();
-
 //takes in the token array, returns an array of the parse result [error,parse,cst]
-function parse(array){
+function parse(array,tree){
 	var currentToken = 0;
 	var parseString = "";
   var cstString = "";
@@ -58,9 +58,13 @@ function parse(array){
   var astDepth = 0;
 
   //Tree Object Vars
+  var asTree = new Tree();
   var scope = -1;
   var blockList = [];
   var string = "";
+
+  //Symbol Table Helper
+  var symbolArray = [];
 
   var returnArr;
   
@@ -68,7 +72,7 @@ function parse(array){
 
   parseProgram();
 
-  returnArr = [errors, parseString, cstString, astString];
+  returnArr = [errors, parseString, cstString, astString, asTree, symbolArray];
   return returnArr;
 
 	function treeMaker(e){
@@ -124,7 +128,7 @@ function parse(array){
 
     //Tree
     scope++;
-    blockList.push(["BLOCK", scope, array[currentToken][2]]); //add block to blocklist
+    blockList.push(["BLOCK", array[currentToken][2], scope]); //add block to blocklist
 
     if (arr.length == 1){
       if (scope > 0){
@@ -248,7 +252,7 @@ function parse(array){
     astString+= treeMaker(astDepth) + "< Print Statement >\n";
 
     //Tree
-    var printNode = ["Print Statement", scope, array[currentToken][2]];
+    var printNode = ["Print Statement", array[currentToken][2], scope];
     asTree.add(printNode,blockList[scope]); //add [print node, parent block]
     
 		match("T_PRINT");
@@ -290,7 +294,7 @@ function parse(array){
     astDepth++;
     
     //Tree
-    var assignmentNode = ["Assignment Statement", scope, array[currentToken][2]];
+    var assignmentNode = ["Assignment Statement", array[currentToken][2],scope];
 
     asTree.add(assignmentNode, blockList[scope]); //add [assignment node, parent block]
 
@@ -325,9 +329,13 @@ function parse(array){
     astDepth++;
 
     //Tree
-    var declarationNode = ["Variable Declaration", scope, array[currentToken][2]];
+    var declarationNode = ["Variable Declaration", array[currentToken][2], scope];
 
     asTree.add(declarationNode, blockList[scope]); //add [variable decl node, parent block]
+
+    //Symbol Table Helper
+
+    symbolArray.push([array[currentToken + 1][1], array[currentToken][1], scope, array[currentToken][2]]);
 
 		parseType(declarationNode);
 		if(errors){
@@ -354,7 +362,7 @@ function parse(array){
     astDepth++;
 
     //Tree
-    var whileNode = ["While Statement", scope, array[currentToken][2]];
+    var whileNode = ["While Statement", array[currentToken][2], scope];
 
     asTree.add(whileNode, blockList[scope]); //add [while node, parent block]
 
@@ -388,7 +396,7 @@ function parse(array){
     astDepth++;
 
     //Tree
-    var ifNode = ["If Statement", scope, array[currentToken][2]];
+    var ifNode = ["If Statement", array[currentToken][2], scope];
 
     asTree.add(ifNode, blockList[scope]); //add [if node, parent block]
 
@@ -463,7 +471,7 @@ function parse(array){
       astDepth++;
 
       //Tree
-      var addNode = ["Add", scope, array[currentToken][2]];
+      var addNode = ["Add", array[currentToken][2], scope];
 
       asTree.add(addNode, arr); //add [add node, parent]
 
@@ -527,7 +535,7 @@ function parse(array){
     astString += " ]\n";
     //ADD THE RIGHT STRING NODE TO THE AST
     //Tree
-    var stringNode = [string, scope, stringLine];
+    var stringNode = ["T_STRING", string, stringLine,scope];
     asTree.add(stringNode, arr); //add [string node, parent]
     string = ""; //reset variable
 
@@ -542,7 +550,7 @@ function parse(array){
       astDepth++;
 
       //Tree
-      var boolExpNode = ["Boolean Expression", scope, array[currentToken][2]];
+      var boolExpNode = ["Boolean Expression", array[currentToken][2], scope];
       asTree.add(boolExpNode, arr); //add [bool exp node, parent block]
 
 			match("T_LPAREN");
@@ -593,6 +601,7 @@ function parse(array){
     astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
     
     //Tree
+    array[currentToken].push(scope);
     asTree.add(array[currentToken], arr); //add [id node, parent]
     
     match("T_ID");
@@ -639,6 +648,7 @@ function parse(array){
     //AST
     astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
     //Tree
+    array[currentToken].push(scope);
     asTree.add(array[currentToken], arr); //add [type node, parent]
 		if(array[currentToken][0]=="T_VAR_TYPE_INT"){
 			match("T_VAR_TYPE_INT");
@@ -704,6 +714,7 @@ function parse(array){
     //AST
     astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
     //Tree
+    array[currentToken].push(scope);
     asTree.add(array[currentToken], arr); //add [type node, parent]
 		match("T_DIGIT");
 		if(errors){
@@ -718,6 +729,7 @@ function parse(array){
     //AST
     astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
     //Tree
+    array[currentToken].push(scope);
     asTree.add(array[currentToken], arr); //add [bool op node, parent]
 		if(array[currentToken][0]=="T_EQ"){
 			match("T_EQ");
@@ -746,6 +758,7 @@ function parse(array){
     //AST
     astString += treeMaker(astDepth) + "[ " + array[currentToken][1] + " ]\n";
     //Tree
+    array[currentToken].push(scope);
     asTree.add(array[currentToken], arr); //add [bool val node, parent]
 		if(array[currentToken][0]=="T_FALSE"){
 			match("T_FALSE");
