@@ -6,6 +6,7 @@ function parser(n,a,b){
   var minParse = ""; //string that will be returned for each program (minimal)
 	var parseErrors = false;
   var parseResult = [];
+  var semanticResults;
 
   verboseParse+= "PARSER: Parsing program " + n + "...\n";
   minParse+= "PARSER: Parsing program " + n + "...\n";
@@ -16,8 +17,13 @@ function parser(n,a,b){
 
 	//no errors in parse!
 	if(parseErrors == false){
+    semanticResults = semantic(parseResult[4], parseResult[5]); //returns array with errors/warnings string and table string
     verboseParse+= "PARSER: Parse completed successfully\n\n";
     minParse+= "PARSER: Parse completed successfully\n\n";
+    verboseParse += "Program " + n + " Semantic Analysis...\n";
+    minParse += "Program " + n + " Semantic Analysis...\n";
+    verboseParse += semanticResults[0]; //errors/warnings
+    minParse += semanticResults[0]; //errors/warnings
     verboseParse+= "CST for program " + n + "...\n";
     minParse+= "CST for program " + n + "...\n";
     verboseParse+= parseResult[2]+"\n";
@@ -26,12 +32,11 @@ function parser(n,a,b){
     minParse += "AST for program " + n + "...\n";
     verboseParse += parseResult[3] + "\n\n";
     minParse += parseResult[3] + "\n\n";
-    minParse += parseResult[5];
-
-    //no errors in parse, then we can semantic analize/create and return the symbol table
-    console.log(parseResult[4].root);
-    //verboseParse += semantic(parseResult[4],parseResult[5]); //returns string with errors/warnings if encountered else symbol table
-    //minParse += semantic(parseResult[4],parseResult[5]);
+    console.log(parseResult[4].root); //display AST in console for debugging
+    verboseParse += "Symbol Table for program " + n + "...\n";
+    minParse += "Symbol Table for program " + n + "...\n";
+    verboseParse += semanticResults[1]; //symbol table
+    minParse += semanticResults[1]; //symbol table
 
 	} else {
     verboseParse+= "PARSER: Parse failed with one or more error(s)\n\n";

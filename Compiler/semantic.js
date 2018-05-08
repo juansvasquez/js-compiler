@@ -2,11 +2,21 @@ function semantic(o,a){
   var tree = o;
   var symbolArray = a;
 
-  var tables;
-  var finalString = "";
+  var tableReturn;
+  var tableObject;
+  var tableString;
+  var tableErrorMessage;
+  var tableErrors;
+
+  var finalErrWarn = "";
+  
 
   //Create Symbol Table
-  tables= symTable(a); //returns array of table and string
+  tableReturn= symTable(symbolArray); //returns array of table and string
+  tableObject = tableReturn[0];
+  tableString = tableReturn[1];
+  tableErrorMessage = tableReturn[2];
+  tableErrors = tableReturn[3];
 
   //TODO:Scope Check?
   /*errors	for	undeclared	identiViers, redeclared	identiViers in the	same	scope,
@@ -16,23 +26,46 @@ function semantic(o,a){
   /*warnings	about	declared	but	unused	identiViers,	use	of	uninitialized	
   variables, and	use	of	initialized	but	unused	variables*/
 
-  //if no errors
-  finalString += tables[1];
+  //TODO: FINAL errors/warnings string
 
-  return finalString;
+  //if no errors
+  
+  var final = [/*ERRORS/WARNINGS STRING, TABLE STRING*/];
+  return final;
 }
 
-//Takes in the array of symbols, returns symbol hash table and string for output
+//Takes in the array of symbols, returns symbol dictionary and string for output
+//[[id, type, scope, line],[id, type, scope, line]]
 function symTable(a){
   var symbolArray = a;
-  var table;
-  var tableString;
+  var table = {};
+  var tableString = "";
+  var errorMessage = "";
+  var errors = 0;
 
-  if (symbolArray.length == 0){
-    
+  //transform symbol array into dictionary with key/value pairs
+  //keys are id+scope
+  for (i = 0; i < symbolArray.length; i++){
+    var currentID = symbolArray[i][0] + symbolArray[i][2];
+    if(currentID in table){
+      errorMessage += "Error: The id " + symbolArray[i][0] + " on line " + symbolArray[i][3] + " has already been declared in this scope\n";
+      errors++;
+      break;
+    } else {
+      table.currentID = symbolArray[i];
+    }
   }
   
-  var symTableReturn = [table, tableString];
+  if(errors == 0){
+    tableString += "---------------------------\n";
+    tableString += "Name   Type   Scope   Line\n";
+    tableString += "---------------------------\n";
+    //TODO: for each key/value pair we print an entry
+  } else {
+    tableString += "not produced due to error(s) detected by semantic analysis\n\n";
+  }
+
+  var symTableReturn = [table,tableString,errorMessage,errors];
   return symTableReturn;
 }
 
