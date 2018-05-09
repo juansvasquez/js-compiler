@@ -246,10 +246,11 @@ function lexer(s,b){
   minMessage+= "LEXER: Lexing program " + program + "...\n";
 	//for each substring (line) of the source code, generate its tokens
 	for(i = 0; i < strArr.length; i++){
-		correctLine++;
+    correctLine++;
+    //console.log("line");  //debugger
 		//if current line is empty
 		if(strArr[i]== ""){
-			continue;
+			continue;  
 		} else {
 			tokenLine = scanner(strArr[i],correctLine); //scan current line, return its token list
 			

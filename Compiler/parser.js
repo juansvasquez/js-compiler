@@ -18,25 +18,32 @@ function parser(n,a,b){
 	//no errors in parse!
 	if(parseErrors == false){
     semanticResults = semantic(parseResult[4], parseResult[5]); //returns array with errors/warnings string and table string
+
     verboseParse+= "PARSER: Parse completed successfully\n\n";
     minParse+= "PARSER: Parse completed successfully\n\n";
+
     verboseParse += "Program " + n + " Semantic Analysis...\n";
     minParse += "Program " + n + " Semantic Analysis...\n";
-    verboseParse += semanticResults[0]; //errors/warnings
-    minParse += semanticResults[0]; //errors/warnings
+
+    verboseParse += semanticResults[0];     //errors/warnings
+    minParse += semanticResults[0];         //errors/warnings
+    
     verboseParse+= "CST for program " + n + "...\n";
     minParse+= "CST for program " + n + "...\n";
     verboseParse+= parseResult[2]+"\n";
     minParse+= parseResult[2] + "\n";
+
     verboseParse += "AST for program " + n + "...\n";
     minParse += "AST for program " + n + "...\n";
     verboseParse += parseResult[3] + "\n\n";
     minParse += parseResult[3] + "\n\n";
-    console.log(parseResult[4].root); //display AST in console for debugging
+
+    console.log(parseResult[4].root);     //display AST in console for debugging
+
     verboseParse += "Symbol Table for program " + n + "...\n";
     minParse += "Symbol Table for program " + n + "...\n";
-    verboseParse += semanticResults[1]; //symbol table
-    minParse += semanticResults[1]; //symbol table
+    verboseParse += semanticResults[1];     //symbol table
+    minParse += semanticResults[1];         //symbol table
 
 	} else {
     verboseParse+= "PARSER: Parse failed with one or more error(s)\n\n";
@@ -68,8 +75,8 @@ function parse(array,tree){
   var blockList = [];
   var string = "";
 
-  //Symbol Table Helper
-  var symbolArray = [];
+  //Symbol Table Helpers
+  var symbolArray = []; //array of declared symbols
 
   var returnArr;
   

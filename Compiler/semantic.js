@@ -2,13 +2,24 @@ function semantic(o,a){
   var tree = o;
   var symbolArray = a;
 
+  console.log(o);
+  console.log(a);
+
   var tableReturn;
   var tableObject;
   var tableString;
   var tableErrorMessage;
   var tableErrors;
 
-  var finalErrWarn = "";
+  var typeCheckReturn;
+  var typeCheckString;
+  var typeCheckErrors;
+  var typeCheckWarnings;
+
+  var finalErrWarn = "";           //where warning and error messages are printed
+  var errorTally = 0;
+  var warningTally = 0; 
+  var finalTable = "";            //final table string
   
 
   //Create Symbol Table
@@ -18,19 +29,27 @@ function semantic(o,a){
   tableErrorMessage = tableReturn[2];
   tableErrors = tableReturn[3];
 
-  //TODO:Scope Check?
-  /*errors	for	undeclared	identiViers, redeclared	identiViers in the	same	scope,
-    type	mismatches, and	anything	else that	might	go	wrong*/
-
-  //TODO: Type Check
-  /*warnings	about	declared	but	unused	identiViers,	use	of	uninitialized	
-  variables, and	use	of	initialized	but	unused	variables*/
-
-  //TODO: FINAL errors/warnings string
-
-  //if no errors
+  errorTally += tableErrors;
   
-  var final = [/*ERRORS/WARNINGS STRING, TABLE STRING*/];
+  
+  //if there were table errors, skip type checking and go straight to out putting error messages
+  if (tableErrors > 0) {
+    finalErrWarn += tableErrorMessage;
+  } else { //type checking
+    typeCheckReturn = typeCheck(tableObject,tree);
+  }
+
+  //numbers of errors and warnings
+  finalErrWarn += "Semantic Analysis produced "+ errorTally +" error(s) and " + warningTally +" warning(s)\n\n";
+
+  //checks to see if there are errors so table can be printed
+  if (errorTally > 0) {
+    finalTable += "not produced due to error(s) detected by semantic analysis\n\n";
+  } else {
+    finalTable += tableString;
+  }
+
+  var final = [finalErrWarn, finalTable];
   return final;
 }
 
@@ -42,31 +61,42 @@ function symTable(a){
   var tableString = "";
   var errorMessage = "";
   var errors = 0;
+  var currentID;
 
   //transform symbol array into dictionary with key/value pairs
   //keys are id+scope
-  for (i = 0; i < symbolArray.length; i++){
-    var currentID = symbolArray[i][0] + symbolArray[i][2];
-    if(currentID in table){
-      errorMessage += "Error: The id " + symbolArray[i][0] + " on line " + symbolArray[i][3] + " has already been declared in this scope\n";
+  for (h = 0; h < symbolArray.length; h++) {
+    currentID = symbolArray[h][0] + symbolArray[h][2]; //id+scope
+    if (table.hasOwnProperty(currentID)) {
+      errorMessage += "Error: The id " + symbolArray[h][0] + " on line " + symbolArray[h][3] + " has already been declared in this scope\n";
       errors++;
       break;
     } else {
-      table.currentID = symbolArray[i];
+      table[currentID] = symbolArray[h];
     }
   }
-  
+
   if(errors == 0){
-    tableString += "---------------------------\n";
-    tableString += "Name   Type   Scope   Line\n";
-    tableString += "---------------------------\n";
-    //TODO: for each key/value pair we print an entry
+    tableString += "------------------------------------------\n";
+    tableString += "Name \xa0\xa0 Scope \xa0\xa0 Line \xa0\xa0 Type\n";
+    tableString += "------------------------------------------\n";
+    for (var id in table) {
+      if (table.hasOwnProperty(id)) {
+        tableString += "\xa0\xa0\xa0" + table[id][0] + "\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0" + table[id][2] + 
+          "\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0" + table[id][3] + "\xa0\xa0\xa0\xa0\xa0\xa0" + table[id][1]+"\n";
+      }
+    }
   } else {
-    tableString += "not produced due to error(s) detected by semantic analysis\n\n";
+    tableString += "not produced due to error(s) detected by semantic analysis\n\n\n";
   }
 
   var symTableReturn = [table,tableString,errorMessage,errors];
   return symTableReturn;
+}
+
+function typeCheck(o,t){
+  var table = o;
+  var tree = t;
 }
 
 /* function symbolScan(n){
