@@ -35,9 +35,9 @@ function semantic(o,a){
   //if there were table errors, skip type checking and go straight to out putting error messages
   if (tableErrors > 0) {
     finalErrWarn += tableErrorMessage;
-  } else { //type checking
+  } /* else { //type checking
     typeCheckReturn = typeCheck(tableObject,tree);
-  }
+  } */
 
   //numbers of errors and warnings
   finalErrWarn += "Semantic Analysis produced "+ errorTally +" error(s) and " + warningTally +" warning(s)\n\n";
@@ -96,7 +96,44 @@ function symTable(a){
 
 function typeCheck(o,t){
   var table = o;
-  var tree = t;
+  var node = t;
+  var typeString = "";
+  var errors = 0;
+  var warnings = 0;
+  var package;
+
+  if (node.data[0] == "BLOCK"){
+    if(node.children.length > 0){
+      for (c = 0; c < node.children.length; c++){
+        package = typeCheck(o, node.children[c]);
+        typeString += package[0];
+        errors += package[1];
+        warnings += package[2];
+      }
+    } else {
+      return ["",0,0];
+    }
+  }
+  else if(node.data[0] == "Print Statement"){
+    package = typeCheck(o, node.children[0]);
+    typeString += package[0];
+    errors += package[1];
+    warnings += package[2];
+
+  }
+  else if (node.data[0] == "Assignment Statement") {
+
+  }
+
+  var typeCheckReturn = [typeString, errors, warnings];
+  return typeCheckReturn;
+}
+
+function nodeCheck(t){
+  var node = t;
+  if (node.data[0]){
+
+  }
 }
 
 /* function symbolScan(n){

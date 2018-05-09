@@ -90,5 +90,5 @@ tree.add(["String Expression", "hello", 7], ["Assignment Statement", 1, 7]);
 */
 
 //STATEMENTS: [NAME, LINE NUMBER, SCOPE]
-//TOKENS: [NAME, VALUE, LINE NUMBER,SCOPE]
+//TOKENS: [NAME, VALUE, LINE NUMBER, SCOPE]
 //*NO CHAR TOKENS IN THE AST*
