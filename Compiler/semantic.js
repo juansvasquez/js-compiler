@@ -35,7 +35,7 @@ function semantic(o,a){
   //if there were table errors, skip type checking and go straight to out putting error messages
   if (tableErrors > 0) {
     finalErrWarn += tableErrorMessage;
-  } /* else { //type checking
+  } else { //type checking
     typeCheckReturn = typeCheck(tableObject,tree.root);
     typeCheckTable = typeCheckReturn[0];
     typeCheckString = typeCheckReturn[1];
@@ -65,7 +65,7 @@ function semantic(o,a){
         }
       }
     }
-  } */
+  }
 
   //numbers of errors and warnings
   finalErrWarn += "Semantic Analysis produced "+ errorTally +" error(s) and " + warningTally +" warning(s)\n\n";
@@ -139,14 +139,14 @@ function typeCheck(o,t){
   var tempID1 = "";
   var type = "";
   var count = 0;
-  var tmp;
+  var tmp = 0;
 
   if (node.data[0] == "BLOCK"){
     console.log("BLOCK");
     if(node.children.length > 0){
-      for (c = 0; c < node.children.length; c++){
-        tmp = node.children[c];
-        package = typeCheck(table, tmp);
+      while(tmp < node.children.length){
+        console.log(tmp);
+        package = typeCheck(table, node.children[tmp]);
         table = package[0];
         typeString += package[1];
         errors += package[2];
@@ -159,6 +159,7 @@ function typeCheck(o,t){
         }
         console.log("BLOCK Loop");
         console.log(node.data);
+        tmp++;
       }
     } else {
       return [table,"",0,0,""];

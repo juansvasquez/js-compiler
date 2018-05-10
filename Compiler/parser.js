@@ -38,7 +38,7 @@ function parser(n,a,b){
     verboseParse += parseResult[3] + "\n\n";
     minParse += parseResult[3] + "\n\n";
 
-    //console.log(parseResult[4].root);     //display AST in console for debugging
+    console.log(parseResult[4].root);     //display AST in console for debugging
 
     verboseParse += "Symbol Table for program " + n + "...\n";
     minParse += "Symbol Table for program " + n + "...\n";
@@ -68,6 +68,9 @@ function parse(array,tree){
 	var errors = false;
   var cstDepth = 0;
   var astDepth = 0;
+
+  //Boolean Hell
+  var boolDepth = 0;
 
   //Tree Object Vars
   var asTree = new Tree();
@@ -450,14 +453,20 @@ function parse(array,tree){
 				return returnArr;
 			}
 		}
-    else if (array[currentToken][0] == "T_LPAREN" ||
-     array[currentToken][0] == "T_FALSE" ||
+    else if (array[currentToken][0] == "T_LPAREN"){
+      parseBooleanExpr(arr);
+      if (errors) {
+        returnArr = [errors, parseString, cstString];
+        return returnArr;
+      }
+    }
+    else if (array[currentToken][0] == "T_FALSE" ||
      array[currentToken][0] == "T_TRUE"){
-			parseBooleanExpr(arr);
-			if(errors){
-				returnArr = [errors,parseString,cstString];
-				return returnArr;
-			}
+      parseBoolVal(arr);
+      if (errors) {
+        returnArr = [errors, parseString, cstString];
+        return returnArr;
+      }
 		}
 		else if(array[currentToken][0]=="T_ID"){
 			parseId(arr);
@@ -560,11 +569,11 @@ function parse(array,tree){
       //AST
       astString += treeMaker(astDepth) + "< Boolean Expression >\n";
       astDepth++;
-
+      boolDepth++;
       //Tree
-      var boolExpNode = ["Boolean Expression", array[currentToken][2], scope];
+      var boolExpNode = ["Boolean Expression", array[currentToken][2], scope, boolDepth];
       asTree.add(boolExpNode, arr); //add [bool exp node, parent block]
-
+      console.log(boolExpNode);
 			match("T_LPAREN");
 			if(errors){
 				returnArr = [errors,parseString,cstString];
@@ -585,21 +594,14 @@ function parse(array,tree){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
 			}
-			match("T_RPAREN");
+      match("T_RPAREN");
 			if(errors){
 				returnArr = [errors,parseString,cstString];
 				return returnArr;
       }
       astDepth--;
-		}
-		else if(array[currentToken][0]=="T_FALSE" || array[currentToken][0]=="T_TRUE"){
-			parseBoolVal(arr);
-			if(errors){
-				returnArr = [errors,parseString,cstString];
-				return returnArr;
-			}
 		} else {
-			parseString+= "PARSER: ERROR: Expected T_TRUE or T_FALSE or T_LPAREN got " + 
+			parseString+= "PARSER: ERROR: Expected T_LPAREN got " + 
 			array[currentToken][0] + " with value '" + 
 			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
 			errors = true;
