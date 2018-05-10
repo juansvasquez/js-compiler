@@ -2,8 +2,6 @@ function semantic(o,a){
   var tree = o;
   var symbolArray = a;
 
-  console.log(o);
-
   var tableReturn;
   var tableObject;
   var tableString;
@@ -77,7 +75,7 @@ function semantic(o,a){
     finalTable += tableString;
   }
 
-  var final = [finalErrWarn, finalTable];
+  var final = [finalErrWarn, finalTable, errorTally ,typeCheckTable];
   return final;
 }
 
@@ -107,8 +105,6 @@ function symTable(a){
     }
   }
 
-  //console.log(table);
-
   if(errors == 0){
     tableString += "------------------------------------------\n";
     tableString += "Name \xa0\xa0 Scope \xa0\xa0 Line \xa0\xa0 Type\n";
@@ -119,6 +115,7 @@ function symTable(a){
           "\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0" + table[id][3] + "\xa0\xa0\xa0\xa0\xa0\xa0" + table[id][1]+"\n";
       }
     }
+    tableString += "\n\n";
   } else {
     tableString += "not produced due to error(s) detected by semantic analysis\n\n\n";
   }
@@ -142,10 +139,8 @@ function typeCheck(o,t){
   var tmp = 0;
 
   if (node.data[0] == "BLOCK"){
-    console.log("BLOCK");
     if(node.children.length > 0){
       while(tmp < node.children.length){
-        console.log(tmp);
         package = typeCheck(table, node.children[tmp]);
         table = package[0];
         typeString += package[1];
@@ -157,8 +152,6 @@ function typeCheck(o,t){
           var typeCheckReturn = [table, typeString, errors, warnings, type];
           return typeCheckReturn;
         }
-        console.log("BLOCK Loop");
-        console.log(node.data);
         tmp++;
       }
     } else {
@@ -167,7 +160,6 @@ function typeCheck(o,t){
   }
 
   else if(node.data[0] == "Print Statement"){
-    console.log("PRINT");
     package = typeCheck(table, node.children[0]);
     table = package[0];
     typeString += package[1];
@@ -181,13 +173,12 @@ function typeCheck(o,t){
   }
 
   else if (node.data[0] == "Assignment Statement") {
-    console.log("Ass");
     //create a temp id to check against the table (id+scope)
     tempID = "" + node.children[0].data[1] + node.children[0].data[3];
-    //console.log(tempID);
+    
     if(!table.hasOwnProperty(tempID)){ //if tempID not in the table, init without decl error
       count += node.children[0].data[3];
-      //console.log(count);
+      
       for (q = count; q >= 0; q--) {
         tempID = "" + node.children[0].data[1] + q;
         if (table.hasOwnProperty(tempID)) {
@@ -195,7 +186,7 @@ function typeCheck(o,t){
         }
         console.log("Ass loop");
       }
-      //console.log(tempID);
+      
       if (!table.hasOwnProperty(tempID)) {
         typeString += "Error: The id [ " + node.children[0].data[1] + " ] on line " + 
           node.children[0].data[2] + " is being assigned before declaration\n";
@@ -228,7 +219,6 @@ function typeCheck(o,t){
       errors += package[2];
       warnings += package[3];
       type = package[4];
-      console.log(table);
       if (errors > 0) {
         var typeCheckReturn = [table, typeString, errors, warnings, type];
         return typeCheckReturn;
@@ -243,7 +233,6 @@ function typeCheck(o,t){
   }
 
   else if (node.data[0] == "Variable Declaration") {
-    console.log("Var Decl");
     return [table, "", 0, 0,""];
   }
 
@@ -353,7 +342,6 @@ function typeCheck(o,t){
   } */
 
   else if (node.data[0] == "T_DIGIT"){
-    console.log("DIGIT");
     type = "int";
   }
 
@@ -366,11 +354,9 @@ function typeCheck(o,t){
   }
 
   else if (node.data[0] == "T_ID") {
-    console.log("ID");
     //create a temp id to check against the table (id+scope)
     tempID1 = "" + node.data[1] + node.data[3];
     //make sure id has been declared, if not error
-    console.log(tempID1);
     if (!table.hasOwnProperty(tempID1)) {
       //id may be declared in higher level scope
       count += node.data[3];
@@ -379,9 +365,7 @@ function typeCheck(o,t){
         if (table.hasOwnProperty(tempID1)) {
           break;
         }
-        console.log("ID Loop");
       }
-      console.log(tempID1);
       if (!table.hasOwnProperty(tempID1)) {
         typeString += "Error: The id [ " + node.data[1] + " ] on line " +
           node.data[2] + " is being used before declaration\n";

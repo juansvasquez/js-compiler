@@ -7,6 +7,7 @@ function parser(n,a,b){
 	var parseErrors = false;
   var parseResult = [];
   var semanticResults;
+  var codeGenResult;
 
   verboseParse+= "PARSER: Parsing program " + n + "...\n";
   minParse+= "PARSER: Parsing program " + n + "...\n";
@@ -17,7 +18,11 @@ function parser(n,a,b){
 
 	//no errors in parse!
 	if(parseErrors == false){
-    semanticResults = semantic(parseResult[4], parseResult[5]); //returns array with errors/warnings string and table string
+    semanticResults = semantic(parseResult[4], parseResult[5]); //pass tree and symbols, returns array with errors/warnings string and table string
+
+    if(semanticResults[2] == 0){
+      codeGenResult = codeGen(parseResult[4],semanticResults[3]); //pass tree and table
+    }
 
     verboseParse+= "PARSER: Parse completed successfully\n\n";
     minParse+= "PARSER: Parse completed successfully\n\n";
@@ -45,6 +50,11 @@ function parser(n,a,b){
     verboseParse += semanticResults[1];     //symbol table
     minParse += semanticResults[1];         //symbol table
 
+    verboseParse += "Code Generation for program " + n + "...\n";
+    minParse += "Code Generation for program " + n + "...\n";
+    verboseParse += codeGenResult;     //code gen
+    minParse += codeGenResult;         //code gen    
+
 	} else {
     verboseParse+= "PARSER: Parse failed with one or more error(s)\n\n";
     minParse+= "PARSER: Parse failed with one or more error(s)\n\n";
@@ -69,8 +79,11 @@ function parse(array,tree){
   var cstDepth = 0;
   var astDepth = 0;
 
-  //Boolean Hell
+  //Boolean assist
   var boolDepth = 0;
+
+  //Add assist
+  var addDepth = 0;
 
   //Tree Object Vars
   var asTree = new Tree();
@@ -490,9 +503,10 @@ function parse(array,tree){
       //AST
       astString += treeMaker(astDepth) + "< Add >\n";
       astDepth++;
+      addDepth++;
 
       //Tree
-      var addNode = ["Add", array[currentToken][2], scope];
+      var addNode = ["Add", array[currentToken][2], scope, addDepth];
 
       asTree.add(addNode, arr); //add [add node, parent]
 
@@ -573,7 +587,6 @@ function parse(array,tree){
       //Tree
       var boolExpNode = ["Boolean Expression", array[currentToken][2], scope, boolDepth];
       asTree.add(boolExpNode, arr); //add [bool exp node, parent block]
-      console.log(boolExpNode);
 			match("T_LPAREN");
 			if(errors){
 				returnArr = [errors,parseString,cstString];
