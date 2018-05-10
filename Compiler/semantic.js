@@ -35,7 +35,7 @@ function semantic(o,a){
   //if there were table errors, skip type checking and go straight to out putting error messages
   if (tableErrors > 0) {
     finalErrWarn += tableErrorMessage;
-  }  else { //type checking
+  } /* else { //type checking
     typeCheckReturn = typeCheck(tableObject,tree.root);
     typeCheckTable = typeCheckReturn[0];
     typeCheckString = typeCheckReturn[1];
@@ -50,20 +50,22 @@ function semantic(o,a){
   } 
 
   //check table for ids that have not been init+used, or just not been used
-  for (var sym in typeCheckTable) {
-    if (typeCheckTable.hasOwnProperty(sym)) {
-      if (!typeCheckTable[sym][4] && !typeCheckTable[sym][5]){
-        finalErrWarn += "Warning: The id " + typeCheckTable[sym][0] + " on line " +
-          typeCheckTable[sym][3] + " is not being assigned or used\n";;
-        warningTally++;
-      } 
-      else if (!typeCheckTable[sym][5]){
-        finalErrWarn += "Warning: The id [ " + typeCheckTable[sym][0] + " ] on line " +
-          typeCheckTable[sym][3] + " has been assigned but is not being used\n";;
-        warningTally++;
+  if (errorTally == 0){
+    for (var sym in typeCheckTable) {
+      if (typeCheckTable.hasOwnProperty(sym)) {
+        if (!typeCheckTable[sym][4] && !typeCheckTable[sym][5]){
+          finalErrWarn += "Warning: The id " + typeCheckTable[sym][0] + " on line " +
+            typeCheckTable[sym][3] + " is not being assigned or used\n";;
+          warningTally++;
+        } 
+        else if (!typeCheckTable[sym][5]){
+          finalErrWarn += "Warning: The id [ " + typeCheckTable[sym][0] + " ] on line " +
+            typeCheckTable[sym][3] + " has been assigned but is not being used\n";;
+          warningTally++;
+        }
       }
     }
-  }
+  } */
 
   //numbers of errors and warnings
   finalErrWarn += "Semantic Analysis produced "+ errorTally +" error(s) and " + warningTally +" warning(s)\n\n";
@@ -134,23 +136,29 @@ function typeCheck(o,t){
   var package;
   var package1;
   var tempID = "";
+  var tempID1 = "";
   var type = "";
   var count = 0;
+  var tmp;
 
   if (node.data[0] == "BLOCK"){
+    console.log("BLOCK");
     if(node.children.length > 0){
       for (c = 0; c < node.children.length; c++){
-        package = typeCheck(table, node.children[c]);
+        tmp = node.children[c];
+        package = typeCheck(table, tmp);
         table = package[0];
         typeString += package[1];
         errors += package[2];
         warnings += package[3];
         type = package[4];
-
+        
         if (errors > 0) {
           var typeCheckReturn = [table, typeString, errors, warnings, type];
           return typeCheckReturn;
         }
+        console.log("BLOCK Loop");
+        console.log(node.data);
       }
     } else {
       return [table,"",0,0,""];
@@ -158,6 +166,7 @@ function typeCheck(o,t){
   }
 
   else if(node.data[0] == "Print Statement"){
+    console.log("PRINT");
     package = typeCheck(table, node.children[0]);
     table = package[0];
     typeString += package[1];
@@ -171,12 +180,45 @@ function typeCheck(o,t){
   }
 
   else if (node.data[0] == "Assignment Statement") {
+    console.log("Ass");
     //create a temp id to check against the table (id+scope)
     tempID = "" + node.children[0].data[1] + node.children[0].data[3];
+    //console.log(tempID);
     if(!table.hasOwnProperty(tempID)){ //if tempID not in the table, init without decl error
-      typeString += "Error: The id [ " + node.children[0].data[1] + " ] on line " + 
-        node.children[0].data[2] + " is being assigned before declaration\n";
-      errors++;
+      count += node.children[0].data[3];
+      //console.log(count);
+      for (q = count; q >= 0; q--) {
+        tempID = "" + node.children[0].data[1] + q;
+        if (table.hasOwnProperty(tempID)) {
+          break;
+        }
+        console.log("Ass loop");
+      }
+      //console.log(tempID);
+      if (!table.hasOwnProperty(tempID)) {
+        typeString += "Error: The id [ " + node.children[0].data[1] + " ] on line " + 
+          node.children[0].data[2] + " is being assigned before declaration\n";
+        errors++;
+      } else {
+        //if tempID is in the table, update table and compare types
+        table[tempID][4] = true; //updates in table to initialized
+        package = typeCheck(table, node.children[1]);
+        table = package[0];
+        typeString += package[1];
+        errors += package[2];
+        warnings += package[3];
+        type = package[4];
+        if (errors > 0) {
+          var typeCheckReturn = [table, typeString, errors, warnings, type];
+          return typeCheckReturn;
+        }
+        else if (type != table[tempID][1]) { //compare types
+          typeString += "Error: The id [ " + node.children[0].data[1] + " ] on line " +
+            node.children[0].data[2] + " has type [ " + table[tempID][1] +
+            " ] and is assigned the wrong type [ " + type + " ]\n";
+          errors++;
+        }
+      }
     } else { //if tempID is in the table, update table and compare types
       table[tempID][4] = true; //updates in table to initialized
       package = typeCheck(table, node.children[1]);
@@ -185,6 +227,7 @@ function typeCheck(o,t){
       errors += package[2];
       warnings += package[3];
       type = package[4];
+      console.log(table);
       if (errors > 0) {
         var typeCheckReturn = [table, typeString, errors, warnings, type];
         return typeCheckReturn;
@@ -199,6 +242,7 @@ function typeCheck(o,t){
   }
 
   else if (node.data[0] == "Variable Declaration") {
+    console.log("Var Decl");
     return [table, "", 0, 0,""];
   }
 
@@ -308,6 +352,7 @@ function typeCheck(o,t){
   } */
 
   else if (node.data[0] == "T_DIGIT"){
+    console.log("DIGIT");
     type = "int";
   }
 
@@ -320,49 +365,45 @@ function typeCheck(o,t){
   }
 
   else if (node.data[0] == "T_ID") {
+    console.log("ID");
     //create a temp id to check against the table (id+scope)
-    tempID = "" + node.data[1] + node.data[3];
+    tempID1 = "" + node.data[1] + node.data[3];
     //make sure id has been declared, if not error
-    if (!table.hasOwnProperty(tempID)) {
+    console.log(tempID1);
+    if (!table.hasOwnProperty(tempID1)) {
       //id may be declared in higher level scope
-
-
       count += node.data[3];
-      //console.log(q);
-      do {
-        tempID = "" + node.data[1] + count;
-        console.log(tempID);
-        if (table.hasOwnProperty(tempID)) {
+      for (q = count; q >= 0; q--){
+        tempID1 = "" + node.data[1] + q;
+        if (table.hasOwnProperty(tempID1)) {
           break;
         }
-        count--;
-      } while (count != 0);
-
-
-      
-      if (!table.hasOwnProperty(tempID)) {
+        console.log("ID Loop");
+      }
+      console.log(tempID1);
+      if (!table.hasOwnProperty(tempID1)) {
         typeString += "Error: The id [ " + node.data[1] + " ] on line " +
           node.data[2] + " is being used before declaration\n";
         errors++;
       } else { //has been declared, but check if init'd for warning
-        if (!table[tempID][4]) {
+        if (!table[tempID1][4]) {
           typeString += "Warning: The id [ " + node.data[1] + " ] on line " +
             node.data[2] + " is being used before assignment\n";
           warnings++;
         }
         //mark as used, return type
-        table[tempID][5] = true;
-        type = table[tempID][1];
+        table[tempID1][5] = true;
+        type = table[tempID1][1];
       }
     } else { //has been declared, but check if init'd for warning
-      if (!table[tempID][4]) {
+      if (!table[tempID1][4]) {
         typeString += "Warning: The id [ " + node.data[1] + " ] on line " +
           node.data[2] + " is being used before assignment\n";
         warnings++;
       }
       //mark as used, return type
-      table[tempID][5] = true;
-      type = table[tempID][1];
+      table[tempID1][5] = true;
+      type = table[tempID1][1];
     }
   }
 
