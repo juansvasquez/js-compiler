@@ -132,8 +132,10 @@ function typeCheck(o,t){
   var errors = 0;
   var warnings = 0;
   var package;
+  var package1;
   var tempID = "";
   var type = "";
+  var count = 0;
 
   if (node.data[0] == "BLOCK"){
     if(node.children.length > 0){
@@ -143,6 +145,12 @@ function typeCheck(o,t){
         typeString += package[1];
         errors += package[2];
         warnings += package[3];
+        type = package[4];
+
+        if (errors > 0) {
+          var typeCheckReturn = [table, typeString, errors, warnings, type];
+          return typeCheckReturn;
+        }
       }
     } else {
       return [table,"",0,0,""];
@@ -155,6 +163,11 @@ function typeCheck(o,t){
     typeString += package[1];
     errors += package[2];
     warnings += package[3];
+    type = package[4];
+    if (errors > 0) {
+      var typeCheckReturn = [table, typeString, errors, warnings, type];
+      return typeCheckReturn;
+    }
   }
 
   else if (node.data[0] == "Assignment Statement") {
@@ -167,9 +180,19 @@ function typeCheck(o,t){
     } else { //if tempID is in the table, update table and compare types
       table[tempID][4] = true; //updates in table to initialized
       package = typeCheck(table, node.children[1]);
-      if (package[4] != table[tempID][1]){ //compare types
+      table = package[0];
+      typeString += package[1];
+      errors += package[2];
+      warnings += package[3];
+      type = package[4];
+      if (errors > 0) {
+        var typeCheckReturn = [table, typeString, errors, warnings, type];
+        return typeCheckReturn;
+      }
+      else if (type != table[tempID][1]){ //compare types
         typeString += "Error: The id [ " + table[tempID][0] + " ] on line " + 
-          table[tempID][3] + " has type [ " + table[tempID][1] + " ] and is assigned the wrong type [ " + package[4]+" ]\n";
+          table[tempID][3] + " has type [ " + table[tempID][1] + 
+          " ] and is assigned the wrong type [ " + type+" ]\n";
         errors++;
       }
     }
@@ -180,24 +203,109 @@ function typeCheck(o,t){
   }
 
   else if (node.data[0] == "While Statement") {
+    //check boolean expression first (can be a bool expr node or a boolean)
+    package = typeCheck(table, node.children[0]);
+    table = package[0];
+    typeString += package[1];
+    errors += package[2];
+    warnings += package[3];
+    type = package[4];
 
+    if (errors > 0) {
+      var typeCheckReturn = [table, typeString, errors, warnings, type];
+      return typeCheckReturn;
+    }
+
+    //check block
+    package = typeCheck(table, node.children[1]);
+    table = package[0];
+    typeString += package[1];
+    errors += package[2];
+    warnings += package[3];
+    type = package[4];
   }
 
   else if (node.data[0] == "If Statement") {
+    //check boolean expression first (can be a bool expr node or a boolean)
+    package = typeCheck(table, node.children[0]);
+    table = package[0];
+    typeString += package[1];
+    errors += package[2];
+    warnings += package[3];
+    type = package[4];
 
+    if (errors > 0) {
+      var typeCheckReturn = [table, typeString, errors, warnings, type];
+      return typeCheckReturn;
+    }
+
+    //check block
+    package = typeCheck(table, node.children[1]);
+    table = package[0];
+    typeString += package[1];
+    errors += package[2];
+    warnings += package[3];
+    type = package[4];
   }
 
   else if (node.data[0] == "Add") {
+    package = typeCheck(table, node.children[1]);
+    table = package[0];
+    typeString += package[1];
+    errors += package[2];
+    warnings += package[3];
+    type = package[4];
 
+    if (errors > 0) {
+      var typeCheckReturn = [table, typeString, errors, warnings, type];
+      return typeCheckReturn;
+    }
+    //if the second child off add is not an int, error out. Otherwise, this Add node becomes type int
+    if (type != "int"){
+      typeString += "Error: The expression on line " + node.data[1] + 
+      " has type [ int ] and is assigned the wrong type [ " + package[4] + " ]\n";
+      errors++;
+    } else {
+      type = "int";
+    }
   }
 
   else if (node.data[0] == "Boolean Expression") {
+    package = typeCheck(table, node.children[0]);
+    table = package[0];
+    typeString += package[1];
+    errors += package[2];
+    warnings += package[3];
 
+    if (errors > 0) {
+      var typeCheckReturn = [table, typeString, errors, warnings, type];
+      return typeCheckReturn;
+    }
+
+    package1 = typeCheck(table, node.children[2]);
+    table = package1[0];
+    typeString += package1[1];
+    errors += package1[2];
+    warnings += package1[3];
+
+    if (errors > 0) {
+      var typeCheckReturn = [table, typeString, errors, warnings, type];
+      return typeCheckReturn;
+    }
+
+    if (package[4] != package1[4]){
+      typeString += "Error: The expression on line " + node.data[1] +
+        " has type [ " + package[4] + " ] and is compared to the wrong type [ " + package1[4] + " ]\n";
+      errors++;
+    } else {
+      type = "boolean";
+    }
   }
 
-  else if (node.data[0] == "T_EQ" || node.data[0] == "T_INEQ") {
+  //not needed
+  /* else if (node.data[0] == "T_EQ" || node.data[0] == "T_INEQ") {
 
-  }
+  } */
 
   else if (node.data[0] == "T_DIGIT"){
     type = "int";
@@ -216,11 +324,38 @@ function typeCheck(o,t){
     tempID = "" + node.data[1] + node.data[3];
     //make sure id has been declared, if not error
     if (!table.hasOwnProperty(tempID)) {
-      typeString += "Error: The id [ " + node.data[1] + " ] on line " +
-        node.data[2] + " is being used before declaration\n";
-      errors++;
+      //id may be declared in higher level scope
+
+
+      count += node.data[3];
+      //console.log(q);
+      do {
+        tempID = "" + node.data[1] + count;
+        console.log(tempID);
+        if (table.hasOwnProperty(tempID)) {
+          break;
+        }
+        count--;
+      } while (count != 0);
+
+
+      
+      if (!table.hasOwnProperty(tempID)) {
+        typeString += "Error: The id [ " + node.data[1] + " ] on line " +
+          node.data[2] + " is being used before declaration\n";
+        errors++;
+      } else { //has been declared, but check if init'd for warning
+        if (!table[tempID][4]) {
+          typeString += "Warning: The id [ " + node.data[1] + " ] on line " +
+            node.data[2] + " is being used before assignment\n";
+          warnings++;
+        }
+        //mark as used, return type
+        table[tempID][5] = true;
+        type = table[tempID][1];
+      }
     } else { //has been declared, but check if init'd for warning
-      if (!table[tempID][4]){
+      if (!table[tempID][4]) {
         typeString += "Warning: The id [ " + node.data[1] + " ] on line " +
           node.data[2] + " is being used before assignment\n";
         warnings++;
@@ -234,3 +369,4 @@ function typeCheck(o,t){
   var typeCheckReturn = [table, typeString, errors, warnings, type];
   return typeCheckReturn;
 }
+
