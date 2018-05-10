@@ -3,7 +3,6 @@ function semantic(o,a){
   var symbolArray = a;
 
   console.log(o);
-  console.log(a);
 
   var tableReturn;
   var tableObject;
@@ -12,6 +11,7 @@ function semantic(o,a){
   var tableErrors;
 
   var typeCheckReturn;
+  var typeCheckTable;
   var typeCheckString;
   var typeCheckErrors;
   var typeCheckWarnings;
@@ -35,9 +35,19 @@ function semantic(o,a){
   //if there were table errors, skip type checking and go straight to out putting error messages
   if (tableErrors > 0) {
     finalErrWarn += tableErrorMessage;
-  } /* else { //type checking
-    typeCheckReturn = typeCheck(tableObject,tree);
-  } */
+  }  else { //type checking
+    typeCheckReturn = typeCheck(tableObject,tree.root);
+    typeCheckTable = typeCheckReturn[0];
+    typeCheckString = typeCheckReturn[1];
+    typeCheckErrors = typeCheckReturn[2];
+    typeCheckWarnings = typeCheckReturn[3];
+
+    finalErrWarn += typeCheckString;
+    errorTally += typeCheckErrors;
+    warningTally += typeCheckWarnings;
+
+    console.log(typeCheckTable);
+  } 
 
   //numbers of errors and warnings
   finalErrWarn += "Semantic Analysis produced "+ errorTally +" error(s) and " + warningTally +" warning(s)\n\n";
@@ -73,8 +83,12 @@ function symTable(a){
       break;
     } else {
       table[currentID] = symbolArray[h];
+      table[currentID].push(false); //is initialized
+      table[currentID].push(false); //is used
     }
   }
+
+  //console.log(table);
 
   if(errors == 0){
     tableString += "------------------------------------------\n";
@@ -101,64 +115,50 @@ function typeCheck(o,t){
   var errors = 0;
   var warnings = 0;
   var package;
+  var tempID = "";
+  var type = "";
 
   if (node.data[0] == "BLOCK"){
     if(node.children.length > 0){
       for (c = 0; c < node.children.length; c++){
-        package = typeCheck(o, node.children[c]);
-        typeString += package[0];
-        errors += package[1];
-        warnings += package[2];
+        package = typeCheck(table, node.children[c]);
+        table = package[0];
+        typeString += package[1];
+        errors += package[2];
+        warnings += package[3];
       }
     } else {
-      return ["",0,0];
+      return [table,"",0,0];
     }
   }
   else if(node.data[0] == "Print Statement"){
-    package = typeCheck(o, node.children[0]);
-    typeString += package[0];
-    errors += package[1];
-    warnings += package[2];
-
+    package = typeCheck(table, node.children[0]);
+    table = package[0];
+    typeString += package[1];
+    errors += package[2];
+    warnings += package[3];
   }
   else if (node.data[0] == "Assignment Statement") {
-
+    //create a temp id to check against the table (id+scope)
+    tempID = "" + node.children[0].data[1] + node.children[0].data[3];
+    if(!table.hasOwnProperty(tempID)){ //if tempID not in the table, init without decl error
+      typeString += "Error: The id " + node.children[0].data[1] + " on line " + 
+        node.children[0].data[2] + " is being assigned before declaration\n";
+      errors++;
+    } else { //if tempID is in the table, update table and compare types
+      table[tempID][4] = true; //updates in table to initialized
+      package = typeCheck(table, node.children[1]);
+      if (package[4] != table[tempID][1]){ //compare types
+        typeString += "Error: The id " + table[tempID][0] + " on line " + 
+          table[tempID][3] + " has type " + table[tempID][1] + " and is assigned the wrong type" + package[4]+"\n";
+        errors++;
+      }
+    }
+  }
+  else if (node.data[0] == "T_DIGIT"){
+    type = "int";
   }
 
-  var typeCheckReturn = [typeString, errors, warnings];
+  var typeCheckReturn = [table, typeString, errors, warnings, type];
   return typeCheckReturn;
 }
-
-function nodeCheck(t){
-  var node = t;
-  if (node.data[0]){
-
-  }
-}
-
-/* function symbolScan(n){
-  var node = n;
-  var id;
-  var type;
-  var scope;
-  var line;
-  var finalArray = [];
-  //check if node has children
-  if (node.children.length > 0){
-    if (node.data[0] == "Variable Declaration"){
-      id = node.children[1].data[1];
-      type = node.children[0].data[1];
-      scope = node.children[0].data[3];
-      line = node.children[0].data[2];
-      return [id, type, scope, line];
-    } 
-    else if(node.data[0] == "BLOCK") {
-        for (i = 0; i < node.children.length; i++) {
-          finalArray.push(symbolScan(node.children[i]));
-        }
-    } 
-    return finalArray;
-  } else {
-    return [];
-  }
-} */
