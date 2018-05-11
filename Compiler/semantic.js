@@ -43,8 +43,6 @@ function semantic(o,a){
     finalErrWarn += typeCheckString;
     errorTally += typeCheckErrors;
     warningTally += typeCheckWarnings;
-
-    console.log(typeCheckTable);
   } 
 
   //check table for ids that have not been init+used, or just not been used

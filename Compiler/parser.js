@@ -43,7 +43,7 @@ function parser(n,a,b){
     verboseParse += parseResult[3] + "\n\n";
     minParse += parseResult[3] + "\n\n";
 
-    console.log(parseResult[4].root);     //display AST in console for debugging
+    //console.log(parseResult[4].root);     //display AST in console for debugging
 
     verboseParse += "Symbol Table for program " + n + "...\n";
     minParse += "Symbol Table for program " + n + "...\n";
