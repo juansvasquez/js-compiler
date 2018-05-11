@@ -76,8 +76,8 @@ function codeGen(t, o){
     }
   }
 
-  /* //Begin Static Variable Area
-  if (Object.keys(traversalJumpsTab).length === 0 && traversalJumpsTab.constructor === Object) {
+  //Begin Static Variable Area
+  if (Object.keys(traversalStatTab).length === 0 && traversalStatTab.constructor === Object) {
     //no vars to backpatch
   } else {
     spot = spotFinderTD(traversalGrid);
@@ -85,12 +85,28 @@ function codeGen(t, o){
       traversalErrorMessage = "Code exceeds 256 bytes!";
       traversalErrors++;
     } else {
-      for (var id in traversalJumpsTab) {
-        if (traversalJumpsTab.hasOwnProperty(id)) {
+      for (var id in traversalStatTab) {
+        if (traversalStatTab.hasOwnProperty(id)) {
+          console.log(id);
+          spot = spotFinderTD(traversalGrid);
+          traversalGrid[spot][0] = "00";
+          var hexSpot = spot.toString(16);
+          hexSpot.toUpperCase();
+          traversalStatTab[id].push(hexSpot);
+          spot = spotFinderTD(traversalGrid);
+          for (g = 0; g < spot; g++) {
+            // if we find T#XX
+            var idChecker = "" + traversalGrid[g][0] + traversalGrid[g + 1][0];
+            if (idChecker == id) {
+              traversalGrid[g][0] = traversalStatTab[id][3];
+              traversalGrid[g+1][0] = "00";
+            }
+          }
         }
+      }
     }
-  } */
-
+  }
+  console.log(traversalStatTab);
   //check for errors
   if (traversalErrors > 0){
     finalString += traversalErrorMessage;
