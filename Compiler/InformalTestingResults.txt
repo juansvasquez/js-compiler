@@ -1,6 +1,8 @@
 This compiler cannot:
 -Handle multi-line comments
+-Code Gen more than 9 variable declarations
 
-There are some issues with parallel scoping in semantic analysis.
+Bugs:
+Parallel Scoping is pretty bad.
 
 All test cases used are in the Test Cases Folder.
