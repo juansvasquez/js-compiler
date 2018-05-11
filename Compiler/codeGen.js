@@ -31,6 +31,7 @@ function codeGen(t, o){
   var traversalJumpsTab;
   var traversalErrors = 0;
   var traversalErrorMessage;
+  var spot;
 
   traversalResults = traversal(ast.root, grid, symTab, statTab, jumpsTab);
   traversalGrid = traversalResults[0];
@@ -41,20 +42,69 @@ function codeGen(t, o){
 
   console.log(traversalStatTab);
 
+  //break, to be safe
+  spot = spotFinderTD(traversalGrid);
+  if (spot > 255 || traversalGrid[spot].length > 0) {
+    traversalErrorMessage = "Code exceeds 256 bytes!";
+    traversalErrors++;
+  } else {
+    traversalGrid[spot][0] = "00";
+  }
+
+  //backpatch jumps
+  if (Object.keys(traversalJumpsTab).length === 0 && traversalJumpsTab.constructor === Object){
+    //no jumps to backpatch
+  } else {
+    for (var id in traversalJumpsTab) {
+      if (traversalJumpsTab.hasOwnProperty(id)) {
+        //find the key in the table
+        for (g = 0; g < traversalGrid.length; g++) {
+          if (traversalGrid[g][0] == id){
+            var dist = spot-g;
+            //console.log(dist);
+            traversalJumpsTab[id][0] = dist;
+            var newDist = dist.toString(16);
+            //console.log(newDist);
+            if (newDist.length == 1){
+              traversalGrid[g][0] = "0" +newDist;
+            } else {
+              traversalGrid[g][0] = newDist;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* //Begin Static Variable Area
+  if (Object.keys(traversalJumpsTab).length === 0 && traversalJumpsTab.constructor === Object) {
+    //no vars to backpatch
+  } else {
+    spot = spotFinderTD(traversalGrid);
+    if (spot > 255 || traversalGrid[spot].length > 0) {
+      traversalErrorMessage = "Code exceeds 256 bytes!";
+      traversalErrors++;
+    } else {
+      for (var id in traversalJumpsTab) {
+        if (traversalJumpsTab.hasOwnProperty(id)) {
+        }
+    }
+  } */
+
   //check for errors
   if (traversalErrors > 0){
     finalString += traversalErrorMessage;
   } else {
     //Populate empty bytes with 00
-    for(g = 0; g < grid.length; g++){
-      if(grid[g].length == 0){
-        grid[g][0] = "00";
+    for (g = 0; g < traversalGrid.length; g++){
+      if (traversalGrid[g].length == 0){
+        traversalGrid[g][0] = "00";
       }
     }
 
     //transform grid into string to be returned
-    for (g = 0; g < grid.length; g++){
-      finalString += grid[g][0] +"\xa0";
+    for (g = 0; g < traversalGrid.length; g++){
+      finalString += traversalGrid[g][0] +"\xa0";
       if(g % 16 == 15){
         finalString += "\n";
       }
@@ -107,7 +157,11 @@ function traversal(n,g,sy,st,jt){
       errorM = "Code exceeds 256 bytes!";
       errors++;
     } else {
-      grid[spot][0] = "AC";
+      if (node.children[0].data[0] == "T_DIGIT"){
+        grid[spot][0] = "A0";
+      } else{
+        grid[spot][0] = "AC";
+      }
       package = traversal(node.children[0], grid, sym, stat, jumps);
       grid = package[0];
       stat = package[1];
@@ -130,41 +184,27 @@ function traversal(n,g,sy,st,jt){
       errorM = "Code exceeds 256 bytes!";
       errors++;
     } else {
-      var idCheck = "" + node.children[1].data[1] + node.children[1].data[3];
-      if (sym.hasOwnProperty(idCheck)){
-        grid[spot][0] = "AD";
-        //look up in the static table
-        for (var id in stat) {
-          if (stat.hasOwnProperty(id)) {
-            if (stat[id][1] == node.children[1].data[1] && stat[id][2] == node.children[1].data[3]){
-              grid[spot + 1][0] = "T" + stat[id][0];
-              grid[spot + 2][0] = "XX";
-            }
-          }
-        }
-        grid[spot+3][0] = "8D";
-        for (var id in stat) {
-          if (stat.hasOwnProperty(id)) {
-            if (stat[id][1] == node.children[0].data[1] && stat[id][2] == node.children[0].data[3]) {
-              grid[spot + 4][0] = "T" + stat[id][0];
-              grid[spot + 5][0] = "XX";
-            }
-          }
-        }
-      } else {
+      if (node.children[1].data[0] == "T_DIGIT") {
         grid[spot][0] = "A9";
-        grid[spot + 1][0] = "0"+ node.children[1].data[1];
-        grid[spot + 2][0] = "8D";
-        for (var id in stat){
-          if (stat.hasOwnProperty(id)) {
-            if (stat[id][1] == node.children[0].data[1]){
-              grid[spot+3][0] = "T"+stat[id][0];
-              grid[spot+4][0] = "XX";
-              break;
-            }
-          }
-        }
+      } else {
+        grid[spot][0] = "AD";
       }
+      package = traversal(node.children[1], grid, sym, stat, jumps);
+      grid = package[0];
+      stat = package[1];
+      jumps = package[2];
+      errors += package[3];
+      errorM = package[4];
+      
+      spot = spotFinderTD(grid);
+      grid[spot][0] = "8D";
+
+      package = traversal(node.children[0], grid, sym, stat, jumps);
+      grid = package[0];
+      stat = package[1];
+      jumps = package[2];
+      errors += package[3];
+      errorM = package[4];
     }
   }
 
@@ -211,6 +251,7 @@ function traversal(n,g,sy,st,jt){
       jumps = package[2];
       errors += package[3];
       errorM = package[4];
+      
       package = traversal(node.children[1], grid, sym, stat, jumps);
       grid = package[0];
       stat = package[1];
@@ -234,6 +275,7 @@ function traversal(n,g,sy,st,jt){
       jumps = package[2];
       errors += package[3];
       errorM = package[4];
+
       package = traversal(node.children[1], grid, sym, stat, jumps);
       grid = package[0];
       stat = package[1];
@@ -262,23 +304,25 @@ function traversal(n,g,sy,st,jt){
       jumps = package[2];
       errors += package[3];
       errorM = package[4];
-      //check ineq or eq
-      //TODO
+
       spot = spotFinderTD(grid);
       grid[spot][0] = "EC";
-      package = traversal(node.children[1], grid, sym, stat, jumps);
+
+      package = traversal(node.children[2], grid, sym, stat, jumps);
       grid = package[0];
       stat = package[1];
       jumps = package[2];
       errors += package[3];
       errorM = package[4];
+
       spot = spotFinderTD(grid);
       grid[spot][0] = "D0";
+
       for (tmp = 0; tmp < 10; tmp++) {
         var tmpID = "J" + tmp;
         if (!jumps.hasOwnProperty(tmpID)) {
           //jump table [address]
-          jumps[tmpID] = [""];
+          jumps[tmpID] = [];
           grid[spot + 1][0] = "J"+tmp;
           break;
         }
@@ -290,6 +334,7 @@ function traversal(n,g,sy,st,jt){
     console.log("STRING");
   }
 
+  //TODO
   else if (node.data[0] == "T_ID") {
     console.log("ID");
     spot = spotFinderTD(grid);
@@ -323,6 +368,14 @@ function traversal(n,g,sy,st,jt){
 
   else if (node.data[0] == "T_DIGIT") {
     console.log("DIGIT");
+    spot = spotFinderTD(grid);
+    //check if we have space
+    if ((spot + 2) > 255 || grid[spot + 2].length > 0) {
+      errorM = "Code exceeds 256 bytes!";
+      errors++;
+    } else {
+      grid[spot][0] = "0" + node.data[1];
+    }
   }
 
   else if (node.data[0] == "T_EQ") {
