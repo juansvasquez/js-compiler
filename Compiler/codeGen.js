@@ -105,6 +105,24 @@ function traversal(n,g,sy,st,jt){
 
   else if (node.data[0] == "Assignment Statement") {
     console.log("ASSIGN");
+    spot = spotFinderTD(grid);
+    if ((spot + 5) > 255) {
+      errorM = "Code exceeds 256 bytes!";
+      errors++;
+    } else {
+      grid[spot][0] = "A9";
+      grid[spot + 1][0] = "0"+ node.children[1].data[1];
+      grid[spot + 2][0] = "8D";
+      for (var id in stat){
+        if (stat.hasOwnProperty(id)) {
+          if (stat[id][1] == node.children[0].data[1]){
+            grid[spot+3][0] = "T"+stat[id][0];
+            grid[spot+4][0] = "XX";
+            break;
+          }
+        }
+      }
+    }
   }
 
   else if (node.data[0] == "Variable Declaration") {
@@ -113,6 +131,9 @@ function traversal(n,g,sy,st,jt){
     //check if we have space
     if ((spot+5) > 255){
       errorM = "Code exceeds 256 bytes!";
+      errors++;
+    } else if (stat.hasOwnProperty("T9XX")){
+      errorM = "You have exceeded the 9 variable limit!"
       errors++;
     } else {
       grid[spot][0] = "A9";
@@ -123,7 +144,7 @@ function traversal(n,g,sy,st,jt){
         var tmpID = "T"+temp+"X"+"X";
         if (!stat.hasOwnProperty(tmpID)){
           //static table [id,scope,address]
-          stat[tmpID] = [node.children[1].data[1], node.children[1].data[3]];
+          stat[tmpID] = [temp, node.children[1].data[1], node.children[1].data[3]];
           grid[spot + 3][0] = "T"+temp;
           grid[spot + 4][0] = "XX";
           break;
