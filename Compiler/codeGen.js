@@ -361,9 +361,12 @@ function traversal(n,g,sy,st,jt){
     } else {
       for (var id in stat) {
         if (stat.hasOwnProperty(id)) {
-          if (stat[id][1] == node.data[1] /*&& stat[id][2] == node.data[3]*/) {
-            grid[spot][0] = "T" + stat[id][0];
-            grid[spot + 1][0] = "XX";
+          for (f = node.data[3]; f >= 0; f--){
+            if (stat[id][1] == node.data[1] && stat[id][2] == f) {
+              grid[spot][0] = "T" + stat[id][0];
+              grid[spot + 1][0] = "XX";
+              break;
+            }
           }
         }
       }
