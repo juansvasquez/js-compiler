@@ -208,16 +208,21 @@ function traversal(n,g,sy,st,jt){
       if (node.children[0].data[0] == "T_STRING") {
         grid[spot + 1][0] = "02";
       } else if (node.children[0].data[0] == "T_ID"){
-        var tid = "" + node.children[0].data[1] + node.children[0].data[3];
-        for (var id in sym) {
-          if (sym.hasOwnProperty(id)) {
-            if (id == tid){
-              if(sym[id][1] == "string"){
-                grid[spot + 1][0] = "02";
-                break;
-              } else {
-                grid[spot + 1][0] = "01";
-                break;
+        for (var f = node.children[0].data[3]; f >= 0; f--) {
+          var tid = "" + node.children[0].data[1] + f;
+          console.log(tid);
+          for (var id in sym) {
+            if (sym.hasOwnProperty(id)) {
+              if (id == tid){
+                if(sym[id][1] == "string"){
+                  
+                  grid[spot + 1][0] = "02";
+                  break;
+                } else {
+                  
+                  grid[spot + 1][0] = "01";
+                  break;
+                }
               }
             }
           }

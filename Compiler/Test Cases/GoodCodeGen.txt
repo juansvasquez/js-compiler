@@ -5,7 +5,27 @@
   b = 4
   a = b
   print(a)
-  if (a == b) {
-    print(a)
-  }
+}$
+
+{
+ int a
+ a = 1
+ {
+ int a
+ a = 2
+ print(a)
+ }
+ string b
+ b = “alan”
+ print(b)
+ 
+}$
+
+
+{
+ string b
+ b = "alan"
+ if true {
+ print(b)
+ }
 }$
