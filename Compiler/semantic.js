@@ -281,6 +281,7 @@ function typeCheck(o,t){
   }
 
   else if (node.data[0] == "Add") {
+    //we know first child is always an int, so no need to check it
     package = typeCheck(table, node.children[1]);
     table = package[0];
     typeString += package[1];

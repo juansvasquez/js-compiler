@@ -50,8 +50,8 @@ function parser(n,a,b){
     verboseParse += semanticResults[1];     //symbol table
     minParse += semanticResults[1];         //symbol table
 
-    verboseParse += "Code Generation for program " + n + "...\n";
-    minParse += "Code Generation for program " + n + "...\n";
+    verboseParse += "6502a Assembly Code Generation for program " + n + "...\n";
+    minParse += "6502a Assembly Code Generation for program " + n + "...\n";
     verboseParse += codeGenResult;     //code gen
     minParse += codeGenResult;         //code gen    
 
@@ -613,8 +613,14 @@ function parse(array,tree){
 				return returnArr;
       }
       astDepth--;
-		} else {
-			parseString+= "PARSER: ERROR: Expected T_LPAREN got " + 
+    } else if (array[currentToken][0] == "T_TRUE" || array[currentToken][0] == "T_FALSE"){
+      parseBoolVal(arr);
+      if(errors){
+				returnArr = [errors,parseString,cstString];
+				return returnArr;
+			}
+    } else {
+			parseString+= "PARSER: ERROR: Expected T_LPAREN or T_TRUE or T_FALSE got " + 
 			array[currentToken][0] + " with value '" + 
 			array[currentToken][1] + "' on line " + array[currentToken][2] + "\n";
 			errors = true;
