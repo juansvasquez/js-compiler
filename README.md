@@ -5,6 +5,4 @@ JavaScript will be used for this compiler.
 
 1. Clone the repository
 2. Run the index.html file on any web browser.
-3. To view/edit the code for .html or .js files you can use many text editors. I use Sublime Text 3.
-
-P.S. burntFiles folder is for old iterations of certain files, not important to the project
+3. To view/edit the code for .html or .js files you can use many text editors.
