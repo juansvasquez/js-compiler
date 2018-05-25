@@ -1,5 +1,5 @@
-# CMPT432-Compilers
-Private Repository for Alan's Compiler class.
+# Compilers
+Compiler class repo.
 
 JavaScript will be used for this compiler.
 
