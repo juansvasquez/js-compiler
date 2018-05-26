@@ -8,6 +8,11 @@
 }$
 
 {
+ string b
+ b = "alan"
+}$
+
+{
  int a
  a = 1
  {
@@ -16,16 +21,6 @@
  print(a)
  }
  string b
- b = “alan”
- print(b)
- 
-}$
-
-
-{
- string b
  b = "alan"
- if true {
  print(b)
- }
 }$
