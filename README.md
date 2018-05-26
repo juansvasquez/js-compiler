@@ -8,3 +8,4 @@ JavaScript will be used for this compiler.
 3. To view/edit the code for .html or .js files you can use many text editors.
 
 P.S. The burntFiles folder is for unused portions for the project, irrelevant now.
+Multi-line comments and more than 9 variable declarations are not allowed
